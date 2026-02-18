@@ -1,0 +1,3 @@
+[tools]
+"aqua:tinygo-org/tinygo" = "0.40.1"
+go = "1.26.0"
