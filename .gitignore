@@ -1,0 +1,5 @@
+# Ignore Visual Studio Code settings (automatically updated by Mise extension)
+/.vscode/settings.json
+
+# Ignore the compiled WebAssembly plugin
+/plugin.wasm

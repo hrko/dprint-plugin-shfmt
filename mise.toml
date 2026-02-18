@@ -1,3 +1,15 @@
 [tools]
 "aqua:tinygo-org/tinygo" = "0.40.1"
-go = "1.26.0"
+go = "1.25.7"
+
+[tasks.fmt]
+description = "Format Go sources"
+run = "gofmt -w main.go"
+
+[tasks.test]
+description = "Run Go tests"
+run = "go test ./..."
+
+[tasks.build-wasm]
+description = "Build wasm plugin"
+run = "tinygo build -o plugin.wasm -target=wasi -scheduler=none -no-debug main.go"
