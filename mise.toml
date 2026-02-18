@@ -1,5 +1,6 @@
 [tools]
 "aqua:tinygo-org/tinygo" = "0.40.1"
+dprint = "0.51.1"
 go = "1.25.7"
 
 [tasks.fmt]
