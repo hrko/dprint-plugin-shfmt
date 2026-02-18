@@ -1,18 +1,18 @@
 {
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	"onCreateCommand": "bash .devcontainer/on-create-command.sh",
-	"customizations": {
-		"vscode": {
-			"settings": {
-				"mise.configureExtensionsAutomatically": true
-			},
-			"extensions": [
-				"golang.go",
-				"hverlin.mise-vscode",
-				"tamasfe.even-better-toml"
-			]
-		}
-	}
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "onCreateCommand": "bash .devcontainer/on-create-command.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "mise.configureExtensionsAutomatically": true
+      },
+      "extensions": [
+        "golang.go",
+        "hverlin.mise-vscode",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  }
 }
