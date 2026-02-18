@@ -1,0 +1,6 @@
+{
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"onCreateCommand": "bash .devcontainer/on-create-command.sh"
+}
