@@ -2,5 +2,13 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-	"onCreateCommand": "bash .devcontainer/on-create-command.sh"
+	"onCreateCommand": "bash .devcontainer/on-create-command.sh",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"golang.go",
+				"hverlin.mise-vscode"
+			]
+		}
+	}
 }
