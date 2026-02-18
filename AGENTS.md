@@ -27,9 +27,11 @@ If you add project-specific scripts, document them here and keep the commands st
 
 ## Commit & Pull Request Guidelines
 - Commit messages in history are short, imperative sentences with no prefix (example: “Add initial Dockerfile and setup scripts for development environment”).
+- Write commit messages in English.
 - Keep commits focused and descriptive.
 - PRs should include a clear summary, rationale, and any relevant references (issues, specs, or screenshots for behavioral changes).
 
 ## Configuration & Tooling Notes
 - Update `mise.toml` when bumping Go or TinyGo versions.
 - Keep reference docs in `ref/` up to date with any implementation decisions.
+- Write all project documentation in English.
