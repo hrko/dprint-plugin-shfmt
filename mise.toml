@@ -7,6 +7,10 @@ go = "1.25.7"
 description = "Format Go sources"
 run = "gofmt -w main.go"
 
+[tasks.fmt-dprint]
+description = "Format files with dprint"
+run = "dprint fmt"
+
 [tasks.test]
 description = "Run Go tests"
 run = "go test ./..."
