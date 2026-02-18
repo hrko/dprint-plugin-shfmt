@@ -17,4 +17,4 @@ run = "go test ./..."
 
 [tasks.build-wasm]
 description = "Build wasm plugin"
-run = "tinygo build -o plugin.wasm -target=wasi -scheduler=none -no-debug main.go"
+run = "tinygo build -o plugin.wasm -target=wasm-unknown -scheduler=none -panic=trap -no-debug main.go"
