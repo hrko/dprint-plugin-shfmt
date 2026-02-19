@@ -24,6 +24,21 @@ func TestResolveConfigDefaults(t *testing.T) {
 	}
 }
 
+func TestResolveConfigAllowsLockedProperty(t *testing.T) {
+	h := &handler{}
+
+	result := h.ResolveConfig(
+		dprint.ConfigKeyMap{
+			"locked": true,
+		},
+		dprint.GlobalConfiguration{},
+	)
+
+	if len(result.Diagnostics) != 0 {
+		t.Fatalf("expected no diagnostics for locked property, got %d", len(result.Diagnostics))
+	}
+}
+
 func TestResolveConfigGlobalOverrideAndDiagnostics(t *testing.T) {
 	h := &handler{}
 
