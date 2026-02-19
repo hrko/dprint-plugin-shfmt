@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 
 	"github.com/hrko/dprint-plugin-shfmt/dprint"
@@ -10,11 +11,14 @@ const (
 	pluginName      = "dprint-plugin-shfmt"
 	pluginConfigKey = "shfmt"
 	pluginHelpURL   = "https://github.com/hrko/dprint-plugin-shfmt"
-	pluginLicense   = "BSD-3-Clause"
 
 	defaultVersion    = "0.0.0-dev"
 	defaultReleaseTag = "v0.0.0-dev"
 )
+
+//go:generate sh -c "go-licenses report . --template licenses.tpl > licenses.generated.txt"
+//go:embed licenses.generated.txt
+var embeddedLicenseText string
 
 func (h *handler) PluginInfo() dprint.PluginInfo {
 	resolvedVersion := versionOrDefault()
@@ -30,7 +34,7 @@ func (h *handler) PluginInfo() dprint.PluginInfo {
 }
 
 func (h *handler) LicenseText() string {
-	return pluginLicense
+	return embeddedLicenseText
 }
 
 func (h *handler) CheckConfigUpdates(_ dprint.CheckConfigUpdatesMessage) ([]dprint.ConfigChange, error) {

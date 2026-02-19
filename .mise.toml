@@ -2,6 +2,7 @@
 "aqua:tinygo-org/tinygo" = "0.40.1"
 dprint = "0.51.1"
 go = "1.25.7"
+"go:github.com/google/go-licenses/v2" = "2.0.1"
 golangci-lint = "2.10.1"
 goreleaser = "2.13.3"
 

@@ -200,3 +200,18 @@ func TestFormatReturnsErrorOnParseFailure(t *testing.T) {
 		t.Fatalf("unexpected error text: %v", result.Err)
 	}
 }
+
+func TestLicenseTextEmbedsFullLicenseReport(t *testing.T) {
+	h := &handler{}
+	licenseText := h.LicenseText()
+
+	if strings.TrimSpace(licenseText) == "" {
+		t.Fatal("expected non-empty license text")
+	}
+	if !strings.Contains(licenseText, "## github.com/hrko/dprint-plugin-shfmt") {
+		t.Fatal("expected first-party module section in embedded license text")
+	}
+	if !strings.Contains(licenseText, "BSD 3-Clause License") {
+		t.Fatal("expected full BSD license text in embedded license text")
+	}
+}

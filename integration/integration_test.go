@@ -75,6 +75,30 @@ func TestDprintPluginIntegration(t *testing.T) {
 	}
 }
 
+func TestDprintPluginLicenseCommandIntegration(t *testing.T) {
+	runner := newIntegrationRunner(t)
+
+	result := runner.runLicense(t)
+
+	if result.exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d\nstderr:\n%s", result.exitCode, result.cleanStderr)
+	}
+	if result.cleanStderr != "" {
+		t.Fatalf("expected empty stderr, got:\n%s", result.cleanStderr)
+	}
+
+	for _, expected := range []string{
+		"==== DPRINT-PLUGIN-SHFMT LICENSE ====",
+		"## github.com/hrko/dprint-plugin-shfmt",
+		"## mvdan.cc/sh/v3",
+		"BSD 3-Clause License",
+	} {
+		if !strings.Contains(result.stdout, expected) {
+			t.Fatalf("expected stdout to contain %q, got:\n%s", expected, result.stdout)
+		}
+	}
+}
+
 func withCaseDefaults(tc integrationCase) integrationCase {
 	if tc.fixture == "" {
 		tc.fixture = tc.name
@@ -219,6 +243,40 @@ func (r *integrationRunner) runFmt(t *testing.T, configPath string, virtualPath 
 		var exitErr *exec.ExitError
 		if !errors.As(runErr, &exitErr) {
 			t.Fatalf("failed to run dprint fmt: %v", runErr)
+		}
+		exitCode = exitErr.ExitCode()
+	}
+
+	return fmtRunResult{
+		exitCode:    exitCode,
+		stdout:      stdout.String(),
+		cleanStderr: cleanStderr(stderr.String()),
+	}
+}
+
+func (r *integrationRunner) runLicense(t *testing.T) fmtRunResult {
+	t.Helper()
+
+	cmd := exec.Command(
+		"dprint",
+		"license",
+		"--log-level", "info",
+		"--plugins", r.wasmPath,
+	)
+	cmd.Dir = r.repoRoot
+	cmd.Env = r.env
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	runErr := cmd.Run()
+	exitCode := 0
+	if runErr != nil {
+		var exitErr *exec.ExitError
+		if !errors.As(runErr, &exitErr) {
+			t.Fatalf("failed to run dprint license: %v", runErr)
 		}
 		exitCode = exitErr.ExitCode()
 	}
