@@ -44,7 +44,8 @@ tinygo build \
   -target=wasm-unknown \
   -scheduler=none \
   -panic=trap \
-  "$ROOT_DIR/main.go"
+  -no-debug \
+  "$ROOT_DIR"
 
 cat > "$CONFIG_PATH" <<JSON
 {
