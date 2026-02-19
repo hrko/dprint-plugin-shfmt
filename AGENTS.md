@@ -21,6 +21,8 @@ Use `mise` to keep tool versions consistent.
 - `mise run test`: run unit tests (`go test ./...`).
 - `mise run test-integration`: run integration tests with `-tags=integration`.
 - `mise run build-wasm`: produce `plugin.wasm` with TinyGo.
+- `mise run release-check`: validate `.goreleaser.yaml`.
+- `mise run release-snapshot`: build local release artifacts without publishing.
 
 ## Coding Style & Naming Conventions
 - Follow standard Go style; rely on formatters, not manual alignment.
@@ -41,6 +43,14 @@ Use `mise` to keep tool versions consistent.
 - Link issue(s) when applicable.
 - Include test evidence (commands run, such as `mise run test` and `mise run test-integration`).
 - Call out schema updates or release-impacting changes.
+
+## Release Procedure
+- Official releases are created by GitHub Actions when a tag matching `v*` is pushed (see `.github/workflows/release.yml`).
+- Recommended flow:
+  1. Run checks locally (`mise run lint`, `mise run test`, and optionally `mise run test-integration`).
+  2. Create a version tag (for example, `git tag -a v0.0.1 -m "v0.0.1"`).
+  3. Push the tag (`git push origin v0.0.1`).
+- Do not rely on local `mise run release` for normal releases; CI provides `GITHUB_TOKEN` and publishes the release automatically.
 
 ## Documentation Language & Sandbox Constraints
 - Write project documentation in English (README, guides, and in-repo reference docs).
