@@ -1,34 +1,33 @@
 # dprint-plugin-shfmt
 
-An implementation of `shfmt` (`mvdan.cc/sh/v3`) as a dprint Wasm plugin (Schema v4).
+Shell script formatting plugin for dprint.
 
-## Current implementation scope
+This uses the [`mvdan.cc/sh/v3`](https://github.com/mvdan/sh) parser and printer used by `shfmt`.
 
-- Schema v4 required exports
-- Shared buffer implementation (`get_shared_bytes_ptr`, `clear_shared_bytes`)
-- `register_config` / `release_config` / `get_config_diagnostics` / `get_resolved_config`
-- `set_file_path` / `set_override_config` / `format` / `get_formatted_text` / `get_error_text`
-- Formatting via `mvdan.cc/sh/v3/syntax`
-- Dialect detection based on file extension and shebang
-- Mapping of `indentWidth`, `useTabs`, `binaryNextLine`, `switchCaseIndent`, `spaceRedirects`, `funcNextLine`, and `minify`
+## Example config
 
-## Setup
+This example enables the plugin, targets shell script files, and sets a few common formatting options.
+`indentWidth` and `useTabs` are global dprint options, while settings under `shfmt` are plugin-specific.
 
-```bash
-mise install
+```json
+{
+  "plugins": ["https://plugins.dprint.dev/hrko/shfmt-v0.0.1.wasm"],
+  "includes": ["**/*.sh", "**/*.bash"],
+  "indentWidth": 2,
+  "useTabs": false,
+  "shfmt": {
+    "switchCaseIndent": true,
+    "spaceRedirects": true,
+    "funcNextLine": false
+  }
+}
 ```
 
-## Development commands
+## Configuration schema
 
-```bash
-mise run generate
-mise run lint-fix
-mise run lint
-mise run test
-mise run build-wasm
-mise run release-check
-mise run release-snapshot
-```
+See the schema for all available options and the latest canonical definitions.
+- [schema.json](./schema.json)
 
-`mise run build-wasm` generates `plugin.wasm`.
-`mise run release-snapshot` generates release artifacts in `dist/` without publishing.
+## Development docs
+
+For development documentation, see [AGENTS.md](./AGENTS.md).
