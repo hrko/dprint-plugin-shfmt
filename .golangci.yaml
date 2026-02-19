@@ -1,0 +1,22 @@
+version: "2"
+
+formatters:
+  enable:
+    - gci
+    - gofumpt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+
+linters:
+  default: standard
+  enable:
+    - modernize
+    - revive
+    - gocognit
+    - gocritic
+    - goconst
+    - nakedret
+    - tagalign

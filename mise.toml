@@ -2,6 +2,7 @@
 "aqua:tinygo-org/tinygo" = "0.40.1"
 dprint = "0.51.1"
 go = "1.25.7"
+golangci-lint = "2.10.1"
 
 [tasks.fmt]
 description = "Format Go sources"
@@ -14,6 +15,10 @@ run = "dprint fmt"
 [tasks.test]
 description = "Run Go tests"
 run = "go test ./..."
+
+[tasks.lint]
+description = "Run golangci-lint"
+run = "golangci-lint run ./..."
 
 [tasks.build-wasm]
 description = "Build wasm plugin"
