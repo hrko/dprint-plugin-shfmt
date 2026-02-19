@@ -22,7 +22,7 @@ mise install
 
 ```bash
 mise run generate
-mise run fmt
+mise run lint-fix
 mise run lint
 mise run test
 mise run build-wasm

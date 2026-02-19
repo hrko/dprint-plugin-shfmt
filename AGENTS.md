@@ -6,16 +6,16 @@ This repository implements a dprint Wasm plugin for `shfmt` in Go/TinyGo.
 - Root package: plugin entrypoint and handlers (`main.go`, `handler_*.go`).
 - `dprint/`: reusable runtime bridge, config resolver, and shared plugin types.
 - `integration/`: end-to-end tests (`integration_test.go`) and fixtures in `integration/testdata/cases/<case>/`.
-- `schema.json`: published plugin schema.
-- Generated files: `*_generated.go` (regenerate; do not hand-edit).
+- `schema.json`: published plugin schema (generated).
+- Generated files: `*_generated.go` and `schema.json` (regenerate; do not hand-edit).
 - Build output: `plugin.wasm`; release artifacts: `dist/`.
 
 ## Build, Test, and Development Commands
 Use `mise` to keep tool versions consistent.
 
 - `mise install`: install pinned tools (Go, TinyGo, golangci-lint, dprint, goreleaser).
-- `mise run generate`: run `go generate ./...` for boilerplate and config resolver outputs.
-- `mise run fmt`: format core Go files with `gofmt`.
+- `mise run generate`: run `go generate ./...` for boilerplate, config resolver, and schema outputs.
+- `mise run lint-fix`: run `golangci-lint run --fix ./...` for auto-fix and formatting.
 - `mise run fmt-dprint`: format Markdown/JSON/TOML/YAML files via dprint.
 - `mise run lint`: run `golangci-lint` (includes `gofumpt`, `gci`, and enabled linters).
 - `mise run test`: run unit tests (`go test ./...`).

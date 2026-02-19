@@ -5,13 +5,13 @@ go = "1.25.7"
 golangci-lint = "2.10.1"
 goreleaser = "2.13.3"
 
-[tasks.fmt]
-description = "Format Go sources"
-run = "gofmt -w main.go main_test.go"
-
 [tasks.generate]
 description = "Run go generate for code generation"
 run = "go generate ./..."
+
+[tasks.lint-fix]
+description = "Run golangci-lint with auto-fix"
+run = "golangci-lint run --fix ./..."
 
 [tasks.fmt-dprint]
 description = "Format files with dprint"
