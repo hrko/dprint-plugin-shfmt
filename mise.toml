@@ -3,6 +3,7 @@
 dprint = "0.51.1"
 go = "1.25.7"
 golangci-lint = "2.10.1"
+goreleaser = "2.13.3"
 
 [tasks.fmt]
 description = "Format Go sources"
@@ -22,4 +23,16 @@ run = "golangci-lint run ./..."
 
 [tasks.build-wasm]
 description = "Build wasm plugin"
-run = "tinygo build -o plugin.wasm -target=wasm-unknown -scheduler=none -panic=trap -no-debug ."
+run = "tinygo build -o plugin.wasm -target=wasm-unknown -scheduler=none -panic=trap -no-debug -ldflags=\"-X main.Version=${DPRINT_PLUGIN_SHFMT_VERSION:-0.0.0-dev} -X main.ReleaseTag=${DPRINT_PLUGIN_SHFMT_RELEASE_TAG:-v0.0.0-dev}\" ."
+
+[tasks.release-check]
+description = "Validate goreleaser configuration"
+run = "goreleaser check"
+
+[tasks.release-snapshot]
+description = "Build release artifacts with goreleaser (no publish)"
+run = "goreleaser release --snapshot --clean"
+
+[tasks.release]
+description = "Create and publish a GitHub release with goreleaser"
+run = "goreleaser release --clean"

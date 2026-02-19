@@ -1,0 +1,23 @@
+version: 2
+
+project_name: dprint-plugin-shfmt
+
+builds:
+  - id: skip-go-build
+    skip: true
+
+before:
+  hooks:
+    - tinygo build -o plugin.wasm -target=wasm-unknown -scheduler=none -panic=trap -no-debug -ldflags="-X main.Version={{ .Version }} -X main.ReleaseTag=v{{ .Version }}" .
+
+release:
+  extra_files:
+    - glob: plugin.wasm
+    - glob: schema.json
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+  extra_files:
+    - glob: plugin.wasm
+    - glob: schema.json

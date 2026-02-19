@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/hrko/dprint-plugin-shfmt/main/schema.json",
+  "type": "object",
+  "properties": {
+    "locked": {
+      "description": "Whether the configuration is not allowed to be overridden or extended.",
+      "type": "boolean"
+    },
+    "indentWidth": {
+      "description": "Number of spaces per indentation level when not using tabs.",
+      "default": 2,
+      "type": "integer",
+      "minimum": 0
+    },
+    "useTabs": {
+      "description": "Whether to use tabs for indentation.",
+      "default": false,
+      "type": "boolean"
+    },
+    "binaryNextLine": {
+      "description": "Whether binary operators should be placed at the start of the next line when line wrapping occurs.",
+      "default": false,
+      "type": "boolean"
+    },
+    "switchCaseIndent": {
+      "description": "Whether switch case bodies should be indented.",
+      "default": false,
+      "type": "boolean"
+    },
+    "spaceRedirects": {
+      "description": "Whether to insert a space after redirection operators.",
+      "default": false,
+      "type": "boolean"
+    },
+    "funcNextLine": {
+      "description": "Whether to place function opening braces on the next line.",
+      "default": false,
+      "type": "boolean"
+    },
+    "minify": {
+      "description": "Whether to minify shell scripts when printing.",
+      "default": false,
+      "type": "boolean"
+    }
+  }
+}

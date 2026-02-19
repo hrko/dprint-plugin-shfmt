@@ -26,6 +26,9 @@ mise run fmt
 mise run lint
 mise run test
 mise run build-wasm
+mise run release-check
+mise run release-snapshot
 ```
 
 `mise run build-wasm` generates `plugin.wasm`.
+`mise run release-snapshot` generates release artifacts in `dist/` without publishing.

@@ -5,3 +5,5 @@
 /plugin.wasm
 # Ignore generated artifacts used by local integration tests
 /.tmp/
+# Ignore GoReleaser output
+/dist/

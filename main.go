@@ -24,6 +24,11 @@ type configuration struct {
 	Minify           bool   `json:"minify"`
 }
 
+var (
+	Version    string
+	ReleaseTag string
+)
+
 type handler struct{}
 
 func (h *handler) ResolveConfig(config dprint.ConfigKeyMap, global dprint.GlobalConfiguration) dprint.ResolveConfigurationResult[configuration] {
@@ -63,12 +68,15 @@ func (h *handler) ResolveConfig(config dprint.ConfigKeyMap, global dprint.Global
 }
 
 func (h *handler) PluginInfo() dprint.PluginInfo {
+	resolvedVersion := versionOrDefault()
+	resolvedReleaseTag := releaseTagOrDefault()
+
 	return dprint.PluginInfo{
 		Name:            "dprint-plugin-shfmt",
-		Version:         "0.0.0-dev",
+		Version:         resolvedVersion,
 		ConfigKey:       "shfmt",
 		HelpURL:         "https://github.com/hrko/dprint-plugin-shfmt",
-		ConfigSchemaURL: "",
+		ConfigSchemaURL: configSchemaURLForTag(resolvedReleaseTag),
 	}
 }
 
@@ -254,4 +262,22 @@ func getBool(config map[string]any, key string, fallback bool, diagnostics *[]dp
 	}
 
 	return boolValue
+}
+
+func configSchemaURLForTag(tag string) string {
+	return fmt.Sprintf("https://github.com/hrko/dprint-plugin-shfmt/releases/download/%s/schema.json", tag)
+}
+
+func versionOrDefault() string {
+	if Version == "" {
+		return "0.0.0-dev"
+	}
+	return Version
+}
+
+func releaseTagOrDefault() string {
+	if ReleaseTag == "" {
+		return "v0.0.0-dev"
+	}
+	return ReleaseTag
 }
