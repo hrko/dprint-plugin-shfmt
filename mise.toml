@@ -6,7 +6,7 @@ golangci-lint = "2.10.1"
 
 [tasks.fmt]
 description = "Format Go sources"
-run = "gofmt -w main.go"
+run = "gofmt -w main.go main_test.go"
 
 [tasks.fmt-dprint]
 description = "Format files with dprint"
@@ -22,4 +22,4 @@ run = "golangci-lint run ./..."
 
 [tasks.build-wasm]
 description = "Build wasm plugin"
-run = "tinygo build -o plugin.wasm -target=wasm-unknown -scheduler=none -panic=trap -no-debug main.go"
+run = "tinygo build -o plugin.wasm -target=wasm-unknown -scheduler=none -panic=trap -no-debug ."
