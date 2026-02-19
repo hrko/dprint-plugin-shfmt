@@ -16,15 +16,15 @@ This document tracks integration-test coverage expansion for `dprint-plugin-shfm
 
 ## P1 (Medium Priority)
 
-- [ ] Add option coverage for `useTabs`.
-- [ ] Add option coverage for `binaryNextLine`.
-- [ ] Add option coverage for `switchCaseIndent`.
-- [ ] Add option coverage for `spaceRedirects`.
-- [ ] Add option coverage for `funcNextLine`.
-- [ ] Add option coverage for `minify`.
+- [x] Add option coverage for `useTabs`.
+- [x] Add option coverage for `binaryNextLine`.
+- [x] Add option coverage for `switchCaseIndent`.
+- [x] Add option coverage for `spaceRedirects`.
+- [x] Add option coverage for `funcNextLine`.
+- [x] Add option coverage for `minify`.
 
 ## P2 (Low Priority)
 
-- [ ] Add configuration-type error coverage (for example `funcNextLine: "invalid"`).
-- [ ] Add unknown-property diagnostic coverage.
-- [ ] Add optional stress-style coverage for repeated invocations with the same cache directory.
+- [x] Add configuration-type error coverage (for example `funcNextLine: "invalid"`).
+- [x] Add unknown-property diagnostic coverage.
+- [x] Add optional stress-style coverage for repeated invocations with the same cache directory.

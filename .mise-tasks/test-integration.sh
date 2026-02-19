@@ -411,6 +411,361 @@ SH
   assert_stderr_clean_empty "$stderr_path"
 }
 
+run_case_use_tabs_option() {
+  LAST_CASE_NAME="use-tabs-option"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local expected_path="$case_dir/expected.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 8,
+    "useTabs": true
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+if true; then
+echo hi
+fi
+SH
+
+  cat > "$expected_path" <<'SH'
+if true; then
+	echo hi
+fi
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 0 "$exit_code"
+  diff -u "$expected_path" "$stdout_path"
+  assert_stderr_clean_empty "$stderr_path"
+}
+
+run_case_binary_next_line_option() {
+  LAST_CASE_NAME="binary-next-line-option"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local expected_path="$case_dir/expected.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "useTabs": false,
+    "binaryNextLine": true
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+if [ "$a" = "b" ] &&
+  [ "$c" = "d" ]; then
+  echo ok
+fi
+SH
+
+  cat > "$expected_path" <<'SH'
+if [ "$a" = "b" ] \
+  && [ "$c" = "d" ]; then
+  echo ok
+fi
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 0 "$exit_code"
+  diff -u "$expected_path" "$stdout_path"
+  assert_stderr_clean_empty "$stderr_path"
+}
+
+run_case_switch_case_indent_option() {
+  LAST_CASE_NAME="switch-case-indent-option"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local expected_path="$case_dir/expected.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "useTabs": false,
+    "switchCaseIndent": true
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+case x in
+a) echo a ;
+esac
+SH
+
+  cat > "$expected_path" <<'SH'
+case x in
+  a) echo a ;;
+esac
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 0 "$exit_code"
+  diff -u "$expected_path" "$stdout_path"
+  assert_stderr_clean_empty "$stderr_path"
+}
+
+run_case_space_redirects_option() {
+  LAST_CASE_NAME="space-redirects-option"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local expected_path="$case_dir/expected.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "useTabs": false,
+    "spaceRedirects": true
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+echo hi >/tmp/x
+SH
+
+  cat > "$expected_path" <<'SH'
+echo hi > /tmp/x
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 0 "$exit_code"
+  diff -u "$expected_path" "$stdout_path"
+  assert_stderr_clean_empty "$stderr_path"
+}
+
+run_case_func_next_line_option() {
+  LAST_CASE_NAME="func-next-line-option"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local expected_path="$case_dir/expected.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "useTabs": false,
+    "funcNextLine": true
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+foo(){
+echo hi
+}
+SH
+
+  cat > "$expected_path" <<'SH'
+foo()
+{
+  echo hi
+}
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 0 "$exit_code"
+  diff -u "$expected_path" "$stdout_path"
+  assert_stderr_clean_empty "$stderr_path"
+}
+
+run_case_minify_option() {
+  LAST_CASE_NAME="minify-option"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local expected_path="$case_dir/expected.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "useTabs": false,
+    "minify": true
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+if [ "$1" = "ok" ]; then
+  echo ok
+fi
+SH
+
+  cat > "$expected_path" <<'SH'
+if [ "$1" = "ok" ];then
+echo ok
+fi
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 0 "$exit_code"
+  diff -u "$expected_path" "$stdout_path"
+  assert_stderr_clean_empty "$stderr_path"
+}
+
+run_case_config_type_error_diagnostic() {
+  LAST_CASE_NAME="config-type-error-diagnostic"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "funcNextLine": "invalid"
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+if [ "$1" = "ok" ]; then
+  echo ok
+fi
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 1 "$exit_code"
+  assert_stdout_empty "$stdout_path"
+  assert_stderr_contains "$stderr_path" "Expected 'funcNextLine' to be a boolean"
+  assert_stderr_contains "$stderr_path" "Had 1 configuration errors."
+}
+
+run_case_unknown_property_diagnostic() {
+  LAST_CASE_NAME="unknown-property-diagnostic"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local stdout_path="$case_dir/stdout.sh"
+  local stderr_path="$case_dir/stderr.txt"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "unknownField": true
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+if [ "$1" = "ok" ]; then
+  echo ok
+fi
+SH
+
+  local exit_code
+  exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+  assert_exit_code 1 "$exit_code"
+  assert_stdout_empty "$stdout_path"
+  assert_stderr_contains "$stderr_path" "Unknown property 'unknownField'."
+  assert_stderr_contains "$stderr_path" "Had 1 configuration errors."
+}
+
+run_case_repeated_invocations_same_cache() {
+  LAST_CASE_NAME="repeated-invocations-same-cache"
+  local case_dir
+  case_dir="$(create_case_dir "$LAST_CASE_NAME")"
+  local config_path="$case_dir/dprint.json"
+  local input_path="$case_dir/input.sh"
+  local expected_path="$case_dir/expected.sh"
+
+  cat > "$config_path" <<JSON
+{
+  "includes": ["**/*.sh"],
+  "plugins": ["$WASM_PATH"],
+  "shfmt": {
+    "indentWidth": 2,
+    "useTabs": false
+  }
+}
+JSON
+
+  cat > "$input_path" <<'SH'
+if [ "$1" = "ok" ];then
+ echo ok
+fi
+SH
+
+  cat > "$expected_path" <<'SH'
+if [ "$1" = "ok" ]; then
+  echo ok
+fi
+SH
+
+  local iteration
+  for iteration in 1 2 3; do
+    local stdout_path="$case_dir/stdout.$iteration.sh"
+    local stderr_path="$case_dir/stderr.$iteration.txt"
+    local exit_code
+    exit_code="$(run_fmt "$config_path" "sample.sh" "$input_path" "$stdout_path" "$stderr_path")"
+    assert_exit_code 0 "$exit_code"
+    diff -u "$expected_path" "$stdout_path"
+    assert_stderr_clean_empty "$stderr_path"
+  done
+}
+
 run_case_format_success
 run_case_no_change
 run_case_parse_error
@@ -418,5 +773,14 @@ run_case_variant_detection_by_extension
 run_case_shebang_precedence
 run_case_global_override
 run_case_comment_and_shebang_preservation
+run_case_use_tabs_option
+run_case_binary_next_line_option
+run_case_switch_case_indent_option
+run_case_space_redirects_option
+run_case_func_next_line_option
+run_case_minify_option
+run_case_config_type_error_diagnostic
+run_case_unknown_property_diagnostic
+run_case_repeated_invocations_same_cache
 
 echo "Integration tests passed."
