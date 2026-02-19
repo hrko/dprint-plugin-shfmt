@@ -15,7 +15,7 @@ type configuration struct {
 	Minify           bool   `description:"Whether to minify shell scripts when printing."                                                     dprint:"default=false"        json:"minify"`
 }
 
-var fileExtensions = []string{"sh", "bash", "zsh", "ksh", "bats"}
+var fileExtensions = []string{"sh", "bash", "zsh", "mksh", "bats"}
 
 func (h *handler) ResolveConfig(
 	config dprint.ConfigKeyMap,

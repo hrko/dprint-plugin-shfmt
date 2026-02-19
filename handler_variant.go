@@ -25,7 +25,7 @@ func variantFromFilePath(filePath string) (syntax.LangVariant, bool) {
 		return syntax.LangPOSIX, true
 	case "bash", "zsh", "bats":
 		return syntax.LangBash, true
-	case "ksh", "mksh":
+	case "mksh":
 		return syntax.LangMirBSDKorn, true
 	default:
 		return syntax.LangBash, false
@@ -64,7 +64,7 @@ func variantFromShebang(fileBytes []byte) (syntax.LangVariant, bool) {
 		return syntax.LangPOSIX, true
 	case "bash", "zsh", "bats":
 		return syntax.LangBash, true
-	case "ksh", "mksh":
+	case "mksh":
 		return syntax.LangMirBSDKorn, true
 	default:
 		return syntax.LangBash, false
