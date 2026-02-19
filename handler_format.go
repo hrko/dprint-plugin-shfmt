@@ -11,7 +11,10 @@ func (h *handler) Format(
 	request dprint.SyncFormatRequest[configuration],
 	_ dprint.HostFormatFunc,
 ) dprint.FormatResult {
-	parser := syntax.NewParser(syntax.Variant(detectVariant(request.FilePath, request.FileBytes)))
+	parser := syntax.NewParser(
+		syntax.Variant(detectVariant(request.FilePath, request.FileBytes)),
+		syntax.KeepComments(true),
+	)
 	prog, err := parser.Parse(bytes.NewReader(request.FileBytes), request.FilePath)
 	if err != nil {
 		return dprint.FormatError(err)
