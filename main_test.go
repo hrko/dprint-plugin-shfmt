@@ -39,7 +39,7 @@ func TestResolveConfigAllowsLockedProperty(t *testing.T) {
 	}
 }
 
-func TestResolveConfigGlobalOverrideAndDiagnostics(t *testing.T) {
+func TestResolveConfigPluginConfigPrecedenceAndDiagnostics(t *testing.T) {
 	h := &handler{}
 
 	result := h.ResolveConfig(
@@ -55,11 +55,11 @@ func TestResolveConfigGlobalOverrideAndDiagnostics(t *testing.T) {
 		},
 	)
 
-	if result.Config.IndentWidth != 8 {
-		t.Fatalf("expected global indent width to override plugin value, got %d", result.Config.IndentWidth)
+	if result.Config.IndentWidth != 4 {
+		t.Fatalf("expected plugin indent width to take precedence, got %d", result.Config.IndentWidth)
 	}
-	if !result.Config.UseTabs {
-		t.Fatal("expected global useTabs to override plugin value")
+	if result.Config.UseTabs {
+		t.Fatal("expected plugin useTabs to take precedence")
 	}
 
 	if len(result.Diagnostics) != 2 {
@@ -84,11 +84,11 @@ func TestResolveConfigCoercesFlexibleValueTypes(t *testing.T) {
 		},
 	)
 
-	if result.Config.IndentWidth != 8 {
-		t.Fatalf("expected coerced global indent width 8, got %d", result.Config.IndentWidth)
+	if result.Config.IndentWidth != 4 {
+		t.Fatalf("expected coerced plugin indent width 4, got %d", result.Config.IndentWidth)
 	}
-	if !result.Config.UseTabs {
-		t.Fatal("expected coerced global useTabs to be true")
+	if result.Config.UseTabs {
+		t.Fatal("expected coerced plugin useTabs to be false")
 	}
 	if !result.Config.BinaryNextLine {
 		t.Fatal("expected binaryNextLine to be true")

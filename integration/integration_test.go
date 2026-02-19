@@ -54,7 +54,7 @@ func TestDprintPluginIntegration(t *testing.T) {
 		{name: "variant-sh-fails-for-bash-array", virtualPath: "sample.sh", exitCode: 1, stderrContains: []string{"arrays are a bash/mksh feature"}},
 		{name: "variant-bash-succeeds-for-bash-array", virtualPath: "sample.bash"},
 		{name: "shebang-precedence"},
-		{name: "global-override"},
+		{name: "plugin-overrides-global"},
 		{name: "comment-and-shebang-preservation"},
 		{name: "use-tabs-option"},
 		{name: "binary-next-line-option"},

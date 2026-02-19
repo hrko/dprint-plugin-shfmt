@@ -78,7 +78,7 @@ func TestResolveConfigWithSpecDefaults(t *testing.T) {
 	}
 }
 
-func TestResolveConfigWithSpecAppliesOverridesAndDiagnostics(t *testing.T) {
+func TestResolveConfigWithSpecPrefersPluginConfigOverGlobal(t *testing.T) {
 	resolved, diagnostics := ResolveConfigWithSpec(
 		ConfigKeyMap{
 			"indentWidth": float64(4),
@@ -93,11 +93,11 @@ func TestResolveConfigWithSpecAppliesOverridesAndDiagnostics(t *testing.T) {
 		resolveConfigSpecTestSpec,
 	)
 
-	if resolved.IndentWidth != 8 {
-		t.Fatalf("expected indentWidth=8, got %d", resolved.IndentWidth)
+	if resolved.IndentWidth != 4 {
+		t.Fatalf("expected indentWidth=4, got %d", resolved.IndentWidth)
 	}
-	if !resolved.UseTabs {
-		t.Fatal("expected useTabs=true")
+	if resolved.UseTabs {
+		t.Fatal("expected useTabs=false")
 	}
 	if !resolved.Minify {
 		t.Fatal("expected minify=true")

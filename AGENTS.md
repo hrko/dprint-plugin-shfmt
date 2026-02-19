@@ -54,4 +54,5 @@ Use `mise` to keep tool versions consistent.
 
 ## Documentation Language & Sandbox Constraints
 - Write project documentation in English (README, guides, and in-repo reference docs).
+- Run test commands via `mise run` wrappers (for example, `mise run test` and `mise run test-integration`) instead of invoking `go test` directly, because direct execution may hit sandbox permission constraints.
 - If a required command is blocked by sandbox or network restrictions, request temporary approval and rerun with escalation.

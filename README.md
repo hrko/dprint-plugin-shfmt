@@ -8,6 +8,7 @@ This uses the [`mvdan.cc/sh/v3`](https://github.com/mvdan/sh) parser and printer
 
 This example enables the plugin, targets shell script files, and sets a few common formatting options.
 `indentWidth` and `useTabs` are global dprint options, while settings under `shfmt` are plugin-specific.
+When both global and plugin values are set for the same option, the plugin value takes precedence.
 
 ```json
 {

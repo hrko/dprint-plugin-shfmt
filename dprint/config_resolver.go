@@ -39,8 +39,8 @@ func ResolveConfigWithSpec[T any](
 	diagnostics := unknownPropertyDiagnosticsWithKnownKeys(config, knownConfigKeys(spec))
 	resolved := defaultConfigurationFromSpec(spec)
 
-	applyConfigValuesWithSpec(&resolved, config, spec, &diagnostics)
 	applyGlobalOverridesWithSpec(&resolved, global, spec, &diagnostics)
+	applyConfigValuesWithSpec(&resolved, config, spec, &diagnostics)
 
 	return resolved, diagnostics
 }
