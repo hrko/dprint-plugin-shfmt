@@ -1,0 +1,9 @@
+{
+  "includes": ["**/*.sh"],
+  "indentWidth": 8,
+  "useTabs": true,
+  "shfmt": {
+    "indentWidth": 2,
+    "useTabs": false
+  }
+}

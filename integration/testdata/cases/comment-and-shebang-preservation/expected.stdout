@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# keep me
+if [ "$1" = "ok" ]; then
+  echo ok # trailing
+fi
