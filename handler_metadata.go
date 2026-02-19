@@ -11,6 +11,7 @@ const (
 	pluginName      = "dprint-plugin-shfmt"
 	pluginConfigKey = "shfmt"
 	pluginHelpURL   = "https://github.com/hrko/dprint-plugin-shfmt"
+	pluginUpdateURL = "https://plugins.dprint.dev/hrko/shfmt/latest.json"
 
 	defaultVersion    = "0.0.0-dev"
 	defaultReleaseTag = "v0.0.0-dev"
@@ -23,6 +24,7 @@ var embeddedLicenseText string
 func (h *handler) PluginInfo() dprint.PluginInfo {
 	resolvedVersion := versionOrDefault()
 	resolvedReleaseTag := releaseTagOrDefault()
+	updateURL := pluginUpdateURL
 
 	return dprint.PluginInfo{
 		Name:            pluginName,
@@ -30,6 +32,7 @@ func (h *handler) PluginInfo() dprint.PluginInfo {
 		ConfigKey:       pluginConfigKey,
 		HelpURL:         pluginHelpURL,
 		ConfigSchemaURL: configSchemaURLForTag(resolvedReleaseTag),
+		UpdateURL:       &updateURL,
 	}
 }
 
@@ -42,7 +45,7 @@ func (h *handler) CheckConfigUpdates(_ dprint.CheckConfigUpdatesMessage) ([]dpri
 }
 
 func configSchemaURLForTag(tag string) string {
-	return fmt.Sprintf("https://github.com/hrko/dprint-plugin-shfmt/releases/download/%s/schema.json", tag)
+	return fmt.Sprintf("https://plugins.dprint.dev/hrko/shfmt/%s/schema.json", tag)
 }
 
 func versionOrDefault() string {

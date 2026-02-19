@@ -215,3 +215,27 @@ func TestLicenseTextEmbedsFullLicenseReport(t *testing.T) {
 		t.Fatal("expected full BSD license text in embedded license text")
 	}
 }
+
+func TestPluginInfoUsesPluginsDprintDevURLs(t *testing.T) {
+	oldVersion := Version
+	oldReleaseTag := ReleaseTag
+	Version = "1.2.3"
+	ReleaseTag = "v1.2.3"
+	t.Cleanup(func() {
+		Version = oldVersion
+		ReleaseTag = oldReleaseTag
+	})
+
+	h := &handler{}
+	info := h.PluginInfo()
+
+	if info.UpdateURL == nil {
+		t.Fatal("expected update URL to be set")
+	}
+	if *info.UpdateURL != "https://plugins.dprint.dev/hrko/shfmt/latest.json" {
+		t.Fatalf("unexpected update URL: %q", *info.UpdateURL)
+	}
+	if info.ConfigSchemaURL != "https://plugins.dprint.dev/hrko/shfmt/v1.2.3/schema.json" {
+		t.Fatalf("unexpected config schema URL: %q", info.ConfigSchemaURL)
+	}
+}

@@ -36,12 +36,14 @@ type RawFormatConfig struct {
 
 // PluginInfo describes plugin metadata exposed to dprint.
 type PluginInfo struct {
-	Name            string  `json:"name"`
-	Version         string  `json:"version"`
-	ConfigKey       string  `json:"configKey"`
-	HelpURL         string  `json:"helpUrl"`
-	ConfigSchemaURL string  `json:"configSchemaUrl"`
-	UpdateURL       *string `json:"updateUrl,omitempty"`
+	Name      string `json:"name"`
+	Version   string `json:"version"`
+	ConfigKey string `json:"configKey"`
+	HelpURL   string `json:"helpUrl"`
+	// ConfigSchemaURL points to a versioned schema JSON.
+	ConfigSchemaURL string `json:"configSchemaUrl"`
+	// UpdateURL points to the latest update manifest JSON.
+	UpdateURL *string `json:"updateUrl,omitempty"`
 }
 
 // FileMatchingInfo declares which files are handled by this plugin.
