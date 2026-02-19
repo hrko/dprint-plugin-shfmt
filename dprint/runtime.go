@@ -1,9 +1,10 @@
 package dprint
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"maps"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 	"unsafe"
@@ -14,14 +15,23 @@ type jsonResponse struct {
 	Data any    `json:"data"`
 }
 
+type rawFormatConfigEnvelope struct {
+	Plugin map[string]json.RawMessage `json:"plugin"`
+	Global map[string]json.RawMessage `json:"global"`
+}
+
+type unresolvedConfigEntry struct {
+	id     FormatConfigID
+	config RawFormatConfig
+}
+
 // Runtime manages shared buffers and config lifecycle for a plugin handler.
 type Runtime[T any] struct {
 	handler SyncPluginHandler[T]
 
 	sharedBytes []byte
 
-	unresolvedConfig map[FormatConfigID]RawFormatConfig
-	resolvedConfig   map[FormatConfigID]ResolveConfigurationResult[T]
+	unresolvedConfigs []unresolvedConfigEntry
 
 	overrideConfig *ConfigKeyMap
 	filePath       *string
@@ -39,10 +49,9 @@ func NewRuntime[T any](handler SyncPluginHandler[T]) *Runtime[T] {
 	}
 
 	return &Runtime[T]{
-		handler:          handler,
-		sharedBytes:      make([]byte, 0),
-		unresolvedConfig: make(map[FormatConfigID]RawFormatConfig),
-		resolvedConfig:   make(map[FormatConfigID]ResolveConfigurationResult[T]),
+		handler:           handler,
+		sharedBytes:       make([]byte, 0),
+		unresolvedConfigs: make([]unresolvedConfigEntry, 0),
 	}
 }
 
@@ -67,8 +76,8 @@ func (r *Runtime[T]) GetLicenseText() uint32 {
 
 // RegisterConfig stores unresolved configuration received through shared bytes.
 func (r *Runtime[T]) RegisterConfig(configID uint32) {
-	var config RawFormatConfig
-	if err := json.Unmarshal(r.takeSharedBytes(), &config); err != nil {
+	config, err := parseRawFormatConfig(r.takeSharedBytes())
+	if err != nil {
 		panic(err)
 	}
 	if config.Plugin == nil {
@@ -79,15 +88,13 @@ func (r *Runtime[T]) RegisterConfig(configID uint32) {
 	}
 
 	id := FormatConfigIDFromRaw(configID)
-	r.unresolvedConfig[id] = config
-	delete(r.resolvedConfig, id)
+	r.setUnresolvedConfig(id, config)
 }
 
 // ReleaseConfig removes unresolved and resolved configuration for id.
 func (r *Runtime[T]) ReleaseConfig(configID uint32) {
 	id := FormatConfigIDFromRaw(configID)
-	delete(r.unresolvedConfig, id)
-	delete(r.resolvedConfig, id)
+	r.removeUnresolvedConfig(id)
 }
 
 // GetConfigDiagnostics writes diagnostics JSON for id and returns its length.
@@ -276,23 +283,19 @@ func (r *Runtime[T]) formatInner(configID FormatConfigID, formatRange *FormatRan
 }
 
 func (r *Runtime[T]) getResolvedConfigResult(configID FormatConfigID) ResolveConfigurationResult[T] {
-	if resolved, ok := r.resolvedConfig[configID]; ok {
-		return resolved
-	}
-
-	resolved := r.createResolvedConfigResult(configID, nil)
-	r.resolvedConfig[configID] = resolved
-	return resolved
+	return r.createResolvedConfigResult(configID, nil)
 }
 
 func (r *Runtime[T]) createResolvedConfigResult(configID FormatConfigID, overrideConfig ConfigKeyMap) ResolveConfigurationResult[T] {
-	unresolvedConfig, ok := r.unresolvedConfig[configID]
+	unresolvedConfig, ok := r.getUnresolvedConfig(configID)
 	if !ok {
 		panic(fmt.Sprintf("plugin must have config set before use (id: %d)", configID.AsRaw()))
 	}
 
 	pluginConfig := cloneConfigMap(unresolvedConfig.Plugin)
-	maps.Copy(pluginConfig, overrideConfig)
+	for key, value := range overrideConfig {
+		pluginConfig[key] = value
+	}
 
 	result := r.handler.ResolveConfig(pluginConfig, unresolvedConfig.Global)
 	if result.Diagnostics == nil {
@@ -381,8 +384,141 @@ func cloneConfigMap(config ConfigKeyMap) ConfigKeyMap {
 	}
 
 	newConfig := make(ConfigKeyMap, len(config))
-	maps.Copy(newConfig, config)
+	for key, value := range config {
+		newConfig[key] = value
+	}
 	return newConfig
+}
+
+func parseRawFormatConfig(data []byte) (RawFormatConfig, error) {
+	var envelope rawFormatConfigEnvelope
+	if err := json.Unmarshal(data, &envelope); err != nil {
+		return RawFormatConfig{}, err
+	}
+
+	pluginConfig, err := decodeRawObject(envelope.Plugin)
+	if err != nil {
+		return RawFormatConfig{}, fmt.Errorf("failed to decode plugin config: %w", err)
+	}
+
+	globalConfig, err := decodeRawObject(envelope.Global)
+	if err != nil {
+		return RawFormatConfig{}, fmt.Errorf("failed to decode global config: %w", err)
+	}
+
+	return RawFormatConfig{
+		Plugin: pluginConfig,
+		Global: GlobalConfiguration(globalConfig),
+	}, nil
+}
+
+func decodeRawObject(rawMap map[string]json.RawMessage) (map[string]any, error) {
+	if rawMap == nil {
+		return nil, nil
+	}
+
+	result := make(map[string]any, len(rawMap))
+	for key, rawValue := range rawMap {
+		value, err := decodeRawValue(rawValue)
+		if err != nil {
+			return nil, fmt.Errorf("key %q: %w", key, err)
+		}
+		result[key] = value
+	}
+	return result, nil
+}
+
+func decodeRawArray(rawArray []json.RawMessage) ([]any, error) {
+	result := make([]any, len(rawArray))
+	for i, rawValue := range rawArray {
+		value, err := decodeRawValue(rawValue)
+		if err != nil {
+			return nil, fmt.Errorf("index %d: %w", i, err)
+		}
+		result[i] = value
+	}
+	return result, nil
+}
+
+func decodeRawValue(raw json.RawMessage) (any, error) {
+	trimmed := bytes.TrimSpace(raw)
+	if len(trimmed) == 0 {
+		return nil, nil
+	}
+
+	switch trimmed[0] {
+	case '{':
+		var nested map[string]json.RawMessage
+		if err := json.Unmarshal(trimmed, &nested); err != nil {
+			return nil, err
+		}
+		return decodeRawObject(nested)
+	case '[':
+		var nested []json.RawMessage
+		if err := json.Unmarshal(trimmed, &nested); err != nil {
+			return nil, err
+		}
+		return decodeRawArray(nested)
+	case '"':
+		var text string
+		if err := json.Unmarshal(trimmed, &text); err != nil {
+			return nil, err
+		}
+		return text, nil
+	case 't', 'f':
+		var boolValue bool
+		if err := json.Unmarshal(trimmed, &boolValue); err != nil {
+			return nil, err
+		}
+		return boolValue, nil
+	case 'n':
+		return nil, nil
+	default:
+		numberText := string(trimmed)
+		if intValue, err := strconv.ParseInt(numberText, 10, 64); err == nil {
+			return intValue, nil
+		}
+		if floatValue, err := strconv.ParseFloat(numberText, 64); err == nil {
+			return floatValue, nil
+		}
+		return nil, fmt.Errorf("unsupported raw value: %q", numberText)
+	}
+}
+
+func (r *Runtime[T]) setUnresolvedConfig(id FormatConfigID, config RawFormatConfig) {
+	for i := range r.unresolvedConfigs {
+		if r.unresolvedConfigs[i].id == id {
+			r.unresolvedConfigs[i].config = config
+			return
+		}
+	}
+
+	r.unresolvedConfigs = append(r.unresolvedConfigs, unresolvedConfigEntry{
+		id:     id,
+		config: config,
+	})
+}
+
+func (r *Runtime[T]) getUnresolvedConfig(id FormatConfigID) (RawFormatConfig, bool) {
+	for i := range r.unresolvedConfigs {
+		if r.unresolvedConfigs[i].id == id {
+			return r.unresolvedConfigs[i].config, true
+		}
+	}
+	return RawFormatConfig{}, false
+}
+
+func (r *Runtime[T]) removeUnresolvedConfig(id FormatConfigID) {
+	for i := range r.unresolvedConfigs {
+		if r.unresolvedConfigs[i].id != id {
+			continue
+		}
+
+		lastIndex := len(r.unresolvedConfigs) - 1
+		r.unresolvedConfigs[i] = r.unresolvedConfigs[lastIndex]
+		r.unresolvedConfigs = r.unresolvedConfigs[:lastIndex]
+		return
+	}
 }
 
 type hostCancellationToken struct{}
