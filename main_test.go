@@ -31,7 +31,7 @@ func TestResolveConfigGlobalOverrideAndDiagnostics(t *testing.T) {
 		dprint.ConfigKeyMap{
 			"indentWidth":  float64(4),
 			"useTabs":      false,
-			"keepPadding":  "invalid",
+			"funcNextLine": "invalid",
 			"unknownField": true,
 		},
 		dprint.GlobalConfiguration{

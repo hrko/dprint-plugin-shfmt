@@ -10,7 +10,7 @@ An implementation of `shfmt` (`mvdan.cc/sh/v3`) as a dprint Wasm plugin (Schema 
 - `set_file_path` / `set_override_config` / `format` / `get_formatted_text` / `get_error_text`
 - Formatting via `mvdan.cc/sh/v3/syntax`
 - Dialect detection based on file extension and shebang
-- Mapping of `indentWidth`, `useTabs`, `binaryNextLine`, `switchCaseIndent`, `spaceRedirects`, `keepPadding`, `funcNextLine`, and `minify`
+- Mapping of `indentWidth`, `useTabs`, `binaryNextLine`, `switchCaseIndent`, `spaceRedirects`, `funcNextLine`, and `minify`
 
 ## Setup
 

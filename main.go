@@ -20,7 +20,6 @@ type configuration struct {
 	BinaryNextLine   bool   `json:"binaryNextLine"`
 	SwitchCaseIndent bool   `json:"switchCaseIndent"`
 	SpaceRedirects   bool   `json:"spaceRedirects"`
-	KeepPadding      bool   `json:"keepPadding"`
 	FuncNextLine     bool   `json:"funcNextLine"`
 	Minify           bool   `json:"minify"`
 }
@@ -35,7 +34,6 @@ func (h *handler) ResolveConfig(config dprint.ConfigKeyMap, global dprint.Global
 		BinaryNextLine:   false,
 		SwitchCaseIndent: false,
 		SpaceRedirects:   false,
-		KeepPadding:      false,
 		FuncNextLine:     false,
 		Minify:           false,
 	}
@@ -47,7 +45,6 @@ func (h *handler) ResolveConfig(config dprint.ConfigKeyMap, global dprint.Global
 	resolved.BinaryNextLine = getBool(config, "binaryNextLine", resolved.BinaryNextLine, &diagnostics)
 	resolved.SwitchCaseIndent = getBool(config, "switchCaseIndent", resolved.SwitchCaseIndent, &diagnostics)
 	resolved.SpaceRedirects = getBool(config, "spaceRedirects", resolved.SpaceRedirects, &diagnostics)
-	resolved.KeepPadding = getBool(config, "keepPadding", resolved.KeepPadding, &diagnostics)
 	resolved.FuncNextLine = getBool(config, "funcNextLine", resolved.FuncNextLine, &diagnostics)
 	resolved.Minify = getBool(config, "minify", resolved.Minify, &diagnostics)
 
@@ -98,7 +95,6 @@ func (h *handler) Format(
 		syntax.BinaryNextLine(request.Config.BinaryNextLine),
 		syntax.SwitchCaseIndent(request.Config.SwitchCaseIndent),
 		syntax.SpaceRedirects(request.Config.SpaceRedirects),
-		syntax.KeepPadding(request.Config.KeepPadding),
 		syntax.FunctionNextLine(request.Config.FuncNextLine),
 		syntax.Minify(request.Config.Minify),
 	)
@@ -211,7 +207,7 @@ func unknownPropertyDiagnostics(config dprint.ConfigKeyMap) []dprint.Configurati
 
 func isKnownProperty(key string) bool {
 	switch key {
-	case "indentWidth", "useTabs", "binaryNextLine", "switchCaseIndent", "spaceRedirects", "keepPadding", "funcNextLine", "minify":
+	case "indentWidth", "useTabs", "binaryNextLine", "switchCaseIndent", "spaceRedirects", "funcNextLine", "minify":
 		return true
 	default:
 		return false

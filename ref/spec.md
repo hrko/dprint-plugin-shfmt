@@ -110,7 +110,6 @@
 | `binaryNextLine`     | `bool` | `false`        | `BinaryNextLine(bool)`                     | `                                             |
 | `switchCaseIndent`   | `bool` | `false`        | `SwitchCaseIndent(bool)`                   | `case` 本体をインデント                       |
 | `spaceRedirects`     | `bool` | `false`        | `SpaceRedirects(bool)`                     | `>file` → `> file`                            |
-| `keepPadding`        | `bool` | `false`        | `KeepPadding(bool)`                        | 列揃えのスペースを維持                        |
 | `funcNextLine`       | `bool` | `false`        | `FuncNextLine(bool)`                       | 関数の中括弧 `{` を次行へ配置                 |
 | `minify`             | `bool` | `false`        | `Minify(bool)`                             | (オプション) 最小化を行う場合                 |
 
