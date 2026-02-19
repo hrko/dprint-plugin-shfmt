@@ -62,7 +62,7 @@ func (h *testHandler) Format(request SyncFormatRequest[testConfig], _ HostFormat
 	return h.nextFormatResult
 }
 
-func TestConfigLifecycleAndResolvedConfigCaching(t *testing.T) {
+func TestConfigLifecycleAndResolvedConfigResolution(t *testing.T) {
 	handler := &testHandler{}
 	runtime := NewRuntime[testConfig](handler)
 
@@ -79,8 +79,8 @@ func TestConfigLifecycleAndResolvedConfigCaching(t *testing.T) {
 	}
 
 	runtime.GetResolvedConfig(1)
-	if handler.resolveConfigCallCount != 1 {
-		t.Fatalf("expected ResolveConfig to be called once due to caching, got %d", handler.resolveConfigCallCount)
+	if handler.resolveConfigCallCount != 2 {
+		t.Fatalf("expected ResolveConfig to be called for each request, got %d", handler.resolveConfigCallCount)
 	}
 
 	runtime.ReleaseConfig(1)
@@ -88,6 +88,50 @@ func TestConfigLifecycleAndResolvedConfigCaching(t *testing.T) {
 	defer func() {
 		if recover() == nil {
 			t.Fatal("expected panic when using released config")
+		}
+	}()
+	runtime.GetResolvedConfig(1)
+}
+
+func TestConfigLifecycleMultipleIDs(t *testing.T) {
+	handler := &testHandler{}
+	runtime := NewRuntime[testConfig](handler)
+
+	runtime.sharedBytes = []byte(`{"plugin":{"value":1},"global":{}}`)
+	runtime.RegisterConfig(1)
+	runtime.sharedBytes = []byte(`{"plugin":{"value":2},"global":{}}`)
+	runtime.RegisterConfig(2)
+
+	runtime.GetResolvedConfig(1)
+	var resolvedConfig testConfig
+	if err := json.Unmarshal(runtime.sharedBytes, &resolvedConfig); err != nil {
+		t.Fatal(err)
+	}
+	if resolvedConfig.Value != 1 {
+		t.Fatalf("expected resolved config value to be 1, got %d", resolvedConfig.Value)
+	}
+
+	runtime.GetResolvedConfig(2)
+	if err := json.Unmarshal(runtime.sharedBytes, &resolvedConfig); err != nil {
+		t.Fatal(err)
+	}
+	if resolvedConfig.Value != 2 {
+		t.Fatalf("expected resolved config value to be 2, got %d", resolvedConfig.Value)
+	}
+
+	runtime.ReleaseConfig(1)
+
+	runtime.GetResolvedConfig(2)
+	if err := json.Unmarshal(runtime.sharedBytes, &resolvedConfig); err != nil {
+		t.Fatal(err)
+	}
+	if resolvedConfig.Value != 2 {
+		t.Fatalf("expected resolved config value to remain 2 after releasing config 1, got %d", resolvedConfig.Value)
+	}
+
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic when using released config id")
 		}
 	}()
 	runtime.GetResolvedConfig(1)
@@ -196,12 +240,49 @@ func TestCheckConfigUpdatesResponse(t *testing.T) {
 	}
 }
 
+func TestParseRawFormatConfigDecodesPrimitiveValues(t *testing.T) {
+	config, err := parseRawFormatConfig([]byte(`{
+		"plugin": {
+			"indentWidth": 2,
+			"useTabs": false,
+			"name": "demo"
+		},
+		"global": {
+			"lineWidth": 120
+		}
+	}`))
+	if err != nil {
+		t.Fatalf("expected parse to succeed: %v", err)
+	}
+
+	if getInt(config.Plugin["indentWidth"]) != 2 {
+		t.Fatalf("expected plugin indentWidth 2, got %#v", config.Plugin["indentWidth"])
+	}
+
+	useTabs, ok := config.Plugin["useTabs"].(bool)
+	if !ok || useTabs {
+		t.Fatalf("expected plugin useTabs false, got %#v", config.Plugin["useTabs"])
+	}
+
+	if config.Plugin["name"] != "demo" {
+		t.Fatalf("expected plugin name demo, got %#v", config.Plugin["name"])
+	}
+
+	if getInt(config.Global["lineWidth"]) != 120 {
+		t.Fatalf("expected global lineWidth 120, got %#v", config.Global["lineWidth"])
+	}
+}
+
 func getInt(value any) int {
 	switch value := value.(type) {
 	case float64:
 		return int(value)
 	case int:
 		return value
+	case int64:
+		return int(value)
+	case uint32:
+		return int(value)
 	default:
 		return 0
 	}
