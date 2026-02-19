@@ -15,7 +15,8 @@ type testHandler struct {
 
 	nextFormatResult FormatResult
 
-	lastFormatRequest SyncFormatRequest[testConfig]
+	lastFormatRequest  SyncFormatRequest[testConfig]
+	lastTokenCancelled bool
 
 	checkConfigUpdatesChanges []ConfigChange
 	checkConfigUpdatesErr     error
@@ -59,7 +60,40 @@ func (h *testHandler) CheckConfigUpdates(_ CheckConfigUpdatesMessage) ([]ConfigC
 
 func (h *testHandler) Format(request SyncFormatRequest[testConfig], _ HostFormatFunc) FormatResult {
 	h.lastFormatRequest = request
+	h.lastTokenCancelled = request.Token.IsCancelled()
 	return h.nextFormatResult
+}
+
+type testHostBridge struct {
+	formatResultCode uint32
+	formattedText    []byte
+	errorText        []byte
+	cancelled        bool
+
+	formatCalled bool
+
+	gotRequest hostFormatRequest
+}
+
+func (h *testHostBridge) writeBuffer(_ uint32) {
+}
+
+func (h *testHostBridge) format(request hostFormatRequest) uint32 {
+	h.formatCalled = true
+	h.gotRequest = request
+	return h.formatResultCode
+}
+
+func (h *testHostBridge) readFormattedText(_ func(length uint32) []byte) []byte {
+	return append([]byte(nil), h.formattedText...)
+}
+
+func (h *testHostBridge) readErrorText(_ func(length uint32) []byte) string {
+	return string(h.errorText)
+}
+
+func (h *testHostBridge) hasCancelled() bool {
+	return h.cancelled
 }
 
 func TestConfigLifecycleAndResolvedConfigResolution(t *testing.T) {
@@ -270,6 +304,113 @@ func TestParseRawFormatConfigDecodesPrimitiveValues(t *testing.T) {
 
 	if getInt(config.Global["lineWidth"]) != 120 {
 		t.Fatalf("expected global lineWidth 120, got %#v", config.Global["lineWidth"])
+	}
+}
+
+func TestFormatWithHostNoChangeForwardsRequest(t *testing.T) {
+	runtime := NewRuntime[testConfig](&testHandler{})
+	host := &testHostBridge{
+		formatResultCode: uint32(FormatResultNoChange),
+	}
+	runtime.host = host
+
+	result := runtime.formatWithHost(SyncHostFormatRequest{
+		FilePath:  "script.sh",
+		FileBytes: []byte("echo test\n"),
+		Range: &FormatRange{
+			Start: 2,
+			End:   5,
+		},
+		OverrideConfig: ConfigKeyMap{
+			"useTabs": true,
+		},
+	})
+
+	if result.Code != FormatResultNoChange {
+		t.Fatalf("expected no-change result, got %d", result.Code)
+	}
+	if !host.formatCalled {
+		t.Fatal("expected host format to be called")
+	}
+	if host.gotRequest.filePath != "script.sh" {
+		t.Fatalf("expected forwarded file path, got %q", host.gotRequest.filePath)
+	}
+	if host.gotRequest.rangeStart != 2 || host.gotRequest.rangeEnd != 5 {
+		t.Fatalf("expected forwarded range 2..5, got %d..%d", host.gotRequest.rangeStart, host.gotRequest.rangeEnd)
+	}
+	if string(host.gotRequest.fileBytes) != "echo test\n" {
+		t.Fatalf("expected forwarded file bytes, got %q", string(host.gotRequest.fileBytes))
+	}
+	if len(host.gotRequest.overrideConfig) == 0 {
+		t.Fatal("expected override config to be forwarded")
+	}
+}
+
+func TestFormatWithHostChangeReadsFormattedBytes(t *testing.T) {
+	runtime := NewRuntime[testConfig](&testHandler{})
+	host := &testHostBridge{
+		formatResultCode: uint32(FormatResultChange),
+		formattedText:    []byte("formatted\n"),
+	}
+	runtime.host = host
+
+	result := runtime.formatWithHost(SyncHostFormatRequest{
+		FilePath:  "script.sh",
+		FileBytes: []byte("echo test\n"),
+	})
+
+	if result.Code != FormatResultChange {
+		t.Fatalf("expected change result, got %d", result.Code)
+	}
+	if string(result.Text) != "formatted\n" {
+		t.Fatalf("expected formatted text, got %q", string(result.Text))
+	}
+	if host.gotRequest.rangeStart != 0 || host.gotRequest.rangeEnd != uint32(len("echo test\n")) {
+		t.Fatalf("expected default range to cover input, got %d..%d", host.gotRequest.rangeStart, host.gotRequest.rangeEnd)
+	}
+}
+
+func TestFormatWithHostErrorReadsErrorBytes(t *testing.T) {
+	runtime := NewRuntime[testConfig](&testHandler{})
+	host := &testHostBridge{
+		formatResultCode: uint32(FormatResultError),
+		errorText:        []byte("host failed"),
+	}
+	runtime.host = host
+
+	result := runtime.formatWithHost(SyncHostFormatRequest{
+		FilePath:  "script.sh",
+		FileBytes: []byte("echo test\n"),
+	})
+
+	if result.Code != FormatResultError {
+		t.Fatalf("expected error result, got %d", result.Code)
+	}
+	if result.Err == nil || result.Err.Error() != "host failed" {
+		t.Fatalf("expected host error text, got %v", result.Err)
+	}
+}
+
+func TestFormatPassesCancellationTokenFromHost(t *testing.T) {
+	handler := &testHandler{
+		nextFormatResult: NoChange(),
+	}
+	runtime := NewRuntime[testConfig](handler)
+	runtime.host = &testHostBridge{cancelled: true}
+
+	runtime.sharedBytes = []byte(`{"plugin":{"value":2},"global":{}}`)
+	runtime.RegisterConfig(1)
+
+	runtime.sharedBytes = []byte("script.sh")
+	runtime.SetFilePath()
+	runtime.sharedBytes = []byte("echo test")
+
+	resultCode := runtime.Format(1)
+	if resultCode != uint32(FormatResultNoChange) {
+		t.Fatalf("expected no-change result, got %d", resultCode)
+	}
+	if !handler.lastTokenCancelled {
+		t.Fatal("expected cancellation token to read cancellation status from host")
 	}
 }
 

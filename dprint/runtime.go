@@ -15,6 +15,7 @@ type jsonResponse struct {
 // Runtime manages shared buffers and config lifecycle for a plugin handler.
 type Runtime[T any] struct {
 	handler SyncPluginHandler[T]
+	host    hostBridge
 
 	sharedBytes []byte
 
@@ -37,6 +38,7 @@ func NewRuntime[T any](handler SyncPluginHandler[T]) *Runtime[T] {
 
 	return &Runtime[T]{
 		handler:           handler,
+		host:              wasmHostBridge{},
 		sharedBytes:       make([]byte, 0),
 		unresolvedConfigs: make([]unresolvedConfigEntry, 0),
 	}
@@ -245,7 +247,7 @@ func (r *Runtime[T]) formatInner(configID FormatConfigID, formatRange *FormatRan
 			ConfigID:  configID,
 			Config:    resolvedConfig.Config,
 			Range:     formatRange,
-			Token:     hostCancellationToken{},
+			Token:     hostCancellationToken{host: r.host},
 		},
 		r.formatWithHost,
 	)

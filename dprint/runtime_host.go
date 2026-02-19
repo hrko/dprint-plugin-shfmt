@@ -5,6 +5,54 @@ import (
 	"fmt"
 )
 
+type hostFormatRequest struct {
+	filePath       string
+	rangeStart     uint32
+	rangeEnd       uint32
+	overrideConfig []byte
+	fileBytes      []byte
+}
+
+type hostBridge interface {
+	writeBuffer(pointer uint32)
+	format(request hostFormatRequest) uint32
+	readFormattedText(readBytesFromHost func(length uint32) []byte) []byte
+	readErrorText(readBytesFromHost func(length uint32) []byte) string
+	hasCancelled() bool
+}
+
+type wasmHostBridge struct{}
+
+func (wasmHostBridge) writeBuffer(pointer uint32) {
+	hostWriteBuffer(pointer)
+}
+
+func (wasmHostBridge) format(request hostFormatRequest) uint32 {
+	filePathBytes := []byte(request.filePath)
+	return hostFormat(
+		bytesPtr(filePathBytes),
+		uint32(len(filePathBytes)),
+		request.rangeStart,
+		request.rangeEnd,
+		bytesPtr(request.overrideConfig),
+		uint32(len(request.overrideConfig)),
+		bytesPtr(request.fileBytes),
+		uint32(len(request.fileBytes)),
+	)
+}
+
+func (wasmHostBridge) readFormattedText(readBytesFromHost func(length uint32) []byte) []byte {
+	return readBytesFromHost(hostGetFormattedText())
+}
+
+func (wasmHostBridge) readErrorText(readBytesFromHost func(length uint32) []byte) string {
+	return string(readBytesFromHost(hostGetErrorText()))
+}
+
+func (wasmHostBridge) hasCancelled() bool {
+	return hostHasCancelled() == 1
+}
+
 func (r *Runtime[T]) formatWithHost(request SyncHostFormatRequest) FormatResult {
 	overrideConfigBytes := []byte{}
 	if len(request.OverrideConfig) > 0 {
@@ -22,27 +70,21 @@ func (r *Runtime[T]) formatWithHost(request SyncHostFormatRequest) FormatResult 
 		endRange = request.Range.End
 	}
 
-	filePathBytes := []byte(request.FilePath)
-	resultCode := hostFormat(
-		bytesPtr(filePathBytes),
-		uint32(len(filePathBytes)),
-		startRange,
-		endRange,
-		bytesPtr(overrideConfigBytes),
-		uint32(len(overrideConfigBytes)),
-		bytesPtr(request.FileBytes),
-		uint32(len(request.FileBytes)),
-	)
+	resultCode := r.host.format(hostFormatRequest{
+		filePath:       request.FilePath,
+		rangeStart:     startRange,
+		rangeEnd:       endRange,
+		overrideConfig: overrideConfigBytes,
+		fileBytes:      request.FileBytes,
+	})
 
 	switch resultCode {
 	case uint32(FormatResultNoChange):
 		return NoChange()
 	case uint32(FormatResultChange):
-		textLength := hostGetFormattedText()
-		return Change(r.readBytesFromHost(textLength))
+		return Change(r.host.readFormattedText(r.readBytesFromHost))
 	case uint32(FormatResultError):
-		errLength := hostGetErrorText()
-		return FormatError(fmt.Errorf("%s", string(r.readBytesFromHost(errLength))))
+		return FormatError(fmt.Errorf("%s", r.host.readErrorText(r.readBytesFromHost)))
 	default:
 		panic(fmt.Sprintf("unknown host format value: %d", resultCode))
 	}
@@ -50,12 +92,17 @@ func (r *Runtime[T]) formatWithHost(request SyncHostFormatRequest) FormatResult 
 
 func (r *Runtime[T]) readBytesFromHost(length uint32) []byte {
 	ptr := r.ClearSharedBytes(length)
-	hostWriteBuffer(ptr)
+	r.host.writeBuffer(ptr)
 	return r.takeSharedBytes()
 }
 
-type hostCancellationToken struct{}
+type hostCancellationToken struct {
+	host hostBridge
+}
 
-func (hostCancellationToken) IsCancelled() bool {
-	return hostHasCancelled() == 1
+func (t hostCancellationToken) IsCancelled() bool {
+	if t.host == nil {
+		return false
+	}
+	return t.host.hasCancelled()
 }
