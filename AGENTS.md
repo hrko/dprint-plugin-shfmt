@@ -40,3 +40,7 @@ Use `mise` to keep tool versions consistent.
 - Link issue(s) when applicable.
 - Include test evidence (commands run, such as `mise run test` and `mise run test-integration`).
 - Call out schema updates or release-impacting changes.
+
+## Documentation Language & Sandbox Constraints
+- Write project documentation in English (README, guides, and in-repo reference docs).
+- If a required command is blocked by sandbox or network restrictions, request temporary approval and rerun with escalation.
