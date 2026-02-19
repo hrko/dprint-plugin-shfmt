@@ -21,3 +21,6 @@ checksum:
   extra_files:
     - glob: plugin.wasm
     - glob: schema.json
+
+changelog:
+  use: github-native
