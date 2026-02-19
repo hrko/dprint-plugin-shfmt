@@ -36,6 +36,7 @@ Use `mise` to keep tool versions consistent.
 ## Commit & Pull Request Guidelines
 - Match existing commit style: short, imperative summaries (for example, `Split runtime internals into dedicated modules`).
 - Keep commits scoped to one logical change.
+- Before committing, confirm documentation files (for example `README.md` and `AGENTS.md`) reflect the latest project state.
 - PRs should clearly describe what changed and why.
 - Link issue(s) when applicable.
 - Include test evidence (commands run, such as `mise run test` and `mise run test-integration`).
