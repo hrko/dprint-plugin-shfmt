@@ -4,6 +4,14 @@ Shell script formatting plugin for dprint.
 
 This uses the [`mvdan.cc/sh/v3`](https://github.com/mvdan/sh) parser and printer used by `shfmt`.
 
+## Setup
+
+You can add this plugin to your dprint config with:
+
+```sh
+dprint config add hrko/shfmt
+```
+
 ## Example config
 
 This example enables the plugin, targets shell script files, and sets a few common formatting options.
@@ -12,7 +20,7 @@ When both global and plugin values are set for the same option, the plugin value
 
 ```json
 {
-  "plugins": ["https://plugins.dprint.dev/hrko/shfmt-v0.0.1.wasm"],
+  "plugins": ["https://plugins.dprint.dev/hrko/shfmt-v<version>.wasm"],
   "includes": ["**/*.sh", "**/*.bash"],
   "indentWidth": 2,
   "useTabs": false,
