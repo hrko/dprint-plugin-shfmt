@@ -11,7 +11,8 @@
       "extensions": [
         "golang.go",
         "hverlin.mise-vscode",
-        "tamasfe.even-better-toml"
+        "tamasfe.even-better-toml",
+        "openai.chatgpt"
       ]
     }
   }
