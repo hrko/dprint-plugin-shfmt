@@ -126,7 +126,6 @@ var (
 			},
 		},
 	}
-	knownPropertySet = createKnownPropertySet()
 
 	fileExtensions = []string{"sh", "bash", "zsh", "ksh", "bats"}
 )
@@ -206,21 +205,22 @@ func unknownPropertyDiagnostics(config dprint.ConfigKeyMap) []dprint.Configurati
 	return diagnostics
 }
 
-func createKnownPropertySet() map[string]struct{} {
-	keys := make(map[string]struct{}, len(uint32ConfigFieldSpecs)+len(boolConfigFieldSpecs)+1)
-	keys[configKeyLocked] = struct{}{}
+func isKnownProperty(key string) bool {
+	if key == configKeyLocked {
+		return true
+	}
+
 	for _, field := range uint32ConfigFieldSpecs {
-		keys[field.key] = struct{}{}
+		if field.key == key {
+			return true
+		}
 	}
 	for _, field := range boolConfigFieldSpecs {
-		keys[field.key] = struct{}{}
+		if field.key == key {
+			return true
+		}
 	}
-	return keys
-}
-
-func isKnownProperty(key string) bool {
-	_, ok := knownPropertySet[key]
-	return ok
+	return false
 }
 
 func getUInt32(config map[string]any, key string, fallback uint32, diagnostics *[]dprint.ConfigurationDiagnostic) uint32 {
