@@ -21,7 +21,7 @@ mise install
 ## Development commands
 
 ```bash
-go generate ./...
+mise run generate
 mise run fmt
 mise run lint
 mise run test
