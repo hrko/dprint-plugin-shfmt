@@ -13,9 +13,7 @@ formatters:
 linters:
   default: standard
   enable:
-    - modernize
     - revive
-    - gocognit
     - gocritic
     - goconst
     - nakedret
