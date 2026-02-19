@@ -41,3 +41,4 @@ If you add project-specific scripts, document them here and keep the commands st
 - Update `mise.toml` when bumping Go or TinyGo versions.
 - Keep reference docs in `ref/` up to date with any implementation decisions.
 - Write all project documentation in English.
+- If sandbox or network restrictions block a required command, request temporary user approval and rerun with escalated permissions.
