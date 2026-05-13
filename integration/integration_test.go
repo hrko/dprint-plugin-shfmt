@@ -191,9 +191,11 @@ func (r *integrationRunner) buildWasm(t *testing.T) {
 		"build",
 		"-o", r.wasmPath,
 		"-target=wasm-unknown",
+		"-gc=conservative",
 		"-scheduler=none",
 		"-panic=trap",
 		"-no-debug",
+		"-ldflags=-extldflags '-z stack-size=1048576'",
 		r.repoRoot,
 	)
 	cmd.Dir = r.repoRoot
