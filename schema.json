@@ -40,6 +40,11 @@
       "type": "boolean",
       "description": "Whether to minify shell scripts when printing.",
       "default": false
+    },
+    "experimentalZsh": {
+      "type": "boolean",
+      "description": "Whether to format .zsh files. Zsh support in the underlying library is experimental.",
+      "default": false
     }
   },
   "$id": "https://raw.githubusercontent.com/hrko/dprint-plugin-shfmt/main/schema.json",

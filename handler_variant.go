@@ -8,6 +8,8 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
+const extZsh = "zsh"
+
 func detectVariant(filePath string, fileBytes []byte) syntax.LangVariant {
 	if variant, ok := variantFromShebang(fileBytes); ok {
 		return variant
@@ -23,8 +25,12 @@ func variantFromFilePath(filePath string) (syntax.LangVariant, bool) {
 	switch extension {
 	case "sh":
 		return syntax.LangPOSIX, true
-	case "bash", "zsh", "bats":
+	case "bash":
 		return syntax.LangBash, true
+	case "bats":
+		return syntax.LangBats, true
+	case extZsh:
+		return syntax.LangZsh, true
 	case "mksh":
 		return syntax.LangMirBSDKorn, true
 	default:
@@ -62,8 +68,12 @@ func variantFromShebang(fileBytes []byte) (syntax.LangVariant, bool) {
 	switch interpreter {
 	case "sh", "dash", "ash":
 		return syntax.LangPOSIX, true
-	case "bash", "zsh", "bats":
+	case "bash":
 		return syntax.LangBash, true
+	case "bats":
+		return syntax.LangBats, true
+	case extZsh:
+		return syntax.LangZsh, true
 	case "mksh":
 		return syntax.LangMirBSDKorn, true
 	default:

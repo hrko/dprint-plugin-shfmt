@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 
@@ -23,9 +24,26 @@ func TestResolveConfigDefaults(t *testing.T) {
 		t.Fatalf("expected no diagnostics, got %d", len(result.Diagnostics))
 	}
 	for _, fileExtension := range result.FileMatching.FileExtensions {
-		if fileExtension == "zsh" {
+		if fileExtension == extZsh {
 			t.Fatal("expected zsh not to be advertised by default")
 		}
+	}
+}
+
+func TestResolveConfigExperimentalZshAdvertisesExtension(t *testing.T) {
+	h := &handler{}
+
+	result := h.ResolveConfig(
+		dprint.ConfigKeyMap{"experimentalZsh": true},
+		dprint.GlobalConfiguration{},
+	)
+
+	if len(result.Diagnostics) != 0 {
+		t.Fatalf("expected no diagnostics, got %d", len(result.Diagnostics))
+	}
+	found := slices.Contains(result.FileMatching.FileExtensions, extZsh)
+	if !found {
+		t.Fatal("expected zsh to be advertised when experimentalZsh is true")
 	}
 }
 

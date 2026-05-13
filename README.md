@@ -33,8 +33,8 @@ When both global and plugin values are set for the same option, the plugin value
 ```
 
 > [!NOTE]
-> The plugin does not advertise `.zsh` files by default. Neither does shfmt support it, fully.\
-> If you want to include them anyway, experimentally, add an explicit association such as `"shfmt": {"associations": ["**/*.zsh"]}`.
+> Zsh support in the underlying library is experimental ([mvdan/sh#120](https://github.com/mvdan/sh/issues/120)).\
+> To opt in, set `"shfmt": {"experimentalZsh": true}` in your dprint config.
 
 ## Configuration schema
 
