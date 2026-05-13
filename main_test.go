@@ -22,6 +22,11 @@ func TestResolveConfigDefaults(t *testing.T) {
 	if len(result.Diagnostics) != 0 {
 		t.Fatalf("expected no diagnostics, got %d", len(result.Diagnostics))
 	}
+	for _, fileExtension := range result.FileMatching.FileExtensions {
+		if fileExtension == "zsh" {
+			t.Fatal("expected zsh not to be advertised by default")
+		}
+	}
 }
 
 func TestResolveConfigAllowsLockedProperty(t *testing.T) {
@@ -196,7 +201,7 @@ func TestFormatReturnsErrorOnParseFailure(t *testing.T) {
 	if result.Code != dprint.FormatResultError {
 		t.Fatalf("expected format error code %d, got %d", dprint.FormatResultError, result.Code)
 	}
-	if result.Err == nil || !strings.Contains(result.Err.Error(), "must end with \"fi\"") {
+	if result.Err == nil || !strings.Contains(result.Err.Error(), "then") {
 		t.Fatalf("unexpected error text: %v", result.Err)
 	}
 }

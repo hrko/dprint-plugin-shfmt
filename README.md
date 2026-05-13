@@ -32,6 +32,10 @@ When both global and plugin values are set for the same option, the plugin value
 }
 ```
 
+> [!NOTE]
+> The plugin does not advertise `.zsh` files by default. Neither does shfmt support it, fully.\
+> If you want to include them anyway, experimentally, add an explicit association such as `"shfmt": {"associations": ["**/*.zsh"]}`.
+
 ## Configuration schema
 
 See the schema for all available options and the latest canonical definitions.
