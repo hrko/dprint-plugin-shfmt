@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+deep_param_expansions(){
+local val="${A:-${B:-${C:-${D:-${E:-${F:-${G:-${H:-fallback}}}}}}}}"
+local path="${INSTALL_DIR:-${XDG_BIN_HOME:-${HOME:?HOME required}/.local/bin}}"
+local combo="${X:-prefix_${Y:-${Z:-inner}}_suffix}"
+printf '%s %s %s\n' "$val" "$path" "$combo"
+}
+
+nested_control_flow(){
+if [[ "${1:-}" == "--deep" ]];then
+for item in alpha beta gamma delta;do
+case "$item" in
+alpha)
+if [[ -n "${VERBOSE:-}" ]];then
+while IFS= read -r line;do
+if [[ "$line" == *"match"* ]];then
+printf '  found: %s\n' "$line"
+fi
+done <<< "$(echo -e "match here\nskip\nmatch again")"
+fi
+;;
+beta|gamma)
+for sub in 1 2 3;do
+if (( sub > 1 ));then
+echo "sub $sub of $item"
+fi
+done
+;;
+*)
+echo "other: $item"
+;;
+esac
+done
+fi
+}
+
+nested_substitutions(){
+local kernel_name
+kernel_name="$(basename "$(dirname "$(realpath "$(command -v bash)")")")"
+local trimmed="${kernel_name%%/*}"
+trimmed="${trimmed##*/}"
+echo "$trimmed"
+}
+
+subshell_chains(){
+(
+cd /tmp || exit 1
+(
+local_var="$(pwd)"
+if [[ "$local_var" == "/tmp" ]];then
+(
+echo "triple nested subshell"
+for f in *.log;do
+[[ -f "$f" ]] && wc -l < "$f"
+done
+)
+fi
+)
+)
+}
+
+heredoc_with_nesting(){
+cat <<-'OUTER'
+	This is a heredoc body
+	with multiple lines
+	and	tabs mixed in
+OUTER
+
+local rendered
+rendered="$(cat <<-EOF
+	dynamic content: $(date +%Y)
+	user: ${USER:-unknown}
+	home: ${HOME:-/tmp}
+EOF
+)"
+echo "$rendered"
+}
+
+arithmetic_nesting(){
+local a=1 b=2 c=3 d=4 e=5
+local result=$(( (a + b) * (c - d) / (e > 0 ? e : 1) ))
+if (( result > 0 && (result % 2 == 0 || result > 100) ));then
+echo "complex: $result"
+elif (( result < 0 ));then
+echo "negative: $result"
+else
+echo "other: $result"
+fi
+}
+
+array_operations(){
+local -a items=("first" "second" "third" "fourth" "fifth")
+local -A mapping=([a]=1 [b]=2 [c]=3)
+
+for key in "${!mapping[@]}";do
+echo "$key=${mapping[$key]}"
+done
+
+for (( i=0; i<${#items[@]}; i++ ));do
+if [[ "${items[$i]}" == *ir* ]];then
+echo "match at $i: ${items[$i]}"
+fi
+done
+}
+
+process_substitution(){
+diff <(echo -e "a\nb\nc") <(echo -e "a\nB\nc") || true
+while IFS= read -r changed;do
+echo "changed: $changed"
+done < <(diff <(echo -e "x\ny") <(echo -e "x\nY") || true)
+}
+
+many_local_vars(){
+local v01=1 v02=2 v03=3 v04=4 v05=5
+local v06=6 v07=7 v08=8 v09=9 v10=10
+local v11=11 v12=12 v13=13 v14=14 v15=15
+local v16=16 v17=17 v18=18 v19=19 v20=20
+echo $(( v01+v02+v03+v04+v05+v06+v07+v08+v09+v10+v11+v12+v13+v14+v15+v16+v17+v18+v19+v20 ))
+}
+
+main(){
+deep_param_expansions
+nested_control_flow "--deep"
+nested_substitutions
+subshell_chains
+heredoc_with_nesting
+arithmetic_nesting
+array_operations
+process_substitution
+many_local_vars
+}
+
+main "$@"
