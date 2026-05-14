@@ -47,6 +47,6 @@
       "default": false
     }
   },
-  "$id": "https://raw.githubusercontent.com/hrko/dprint-plugin-shfmt/main/schema.json",
+  "$id": "https://plugins.dprint.dev/hrko/shfmt/latest/schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#"
 }
