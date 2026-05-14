@@ -6,15 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"go/ast"
-	"go/parser"
 	"go/token"
-	"io/fs"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/google/jsonschema-go/jsonschema"
+	"golang.org/x/tools/go/packages"
 )
 
 type configField struct {
@@ -82,15 +81,13 @@ func parseStructFields(
 	dprintTagKey string,
 	descriptionTagKey string,
 ) ([]configField, error) {
-	fset := token.NewFileSet()
-	//nolint:staticcheck // ParseDir is enough for this local source generator.
-	pkgs, err := parser.ParseDir(fset, dir, includeSourceFile, parser.ParseComments)
+	pkgs, err := loadPackages(dir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse directory %q: %w", dir, err)
+		return nil, err
 	}
 
 	for _, pkg := range pkgs {
-		for _, file := range pkg.Files {
+		for _, file := range pkg.Syntax {
 			fields, ok, parseErr := parseStructTypeFromFile(file, typeName, dprintTagKey, descriptionTagKey)
 			if parseErr != nil {
 				return nil, parseErr
@@ -104,9 +101,26 @@ func parseStructFields(
 	return nil, fmt.Errorf("type %q not found", typeName)
 }
 
-func includeSourceFile(info fs.FileInfo) bool {
-	name := info.Name()
-	return strings.HasSuffix(name, ".go") && !strings.HasSuffix(name, "_test.go")
+func loadPackages(dir string) ([]*packages.Package, error) {
+	pkgs, err := packages.Load(&packages.Config{
+		Mode:  packages.NeedName | packages.NeedCompiledGoFiles | packages.NeedSyntax,
+		Dir:   dir,
+		Tests: false,
+	}, ".")
+	if err != nil {
+		return nil, fmt.Errorf("failed to load package in %q: %w", dir, err)
+	}
+	if len(pkgs) == 0 {
+		return nil, fmt.Errorf("no package found in %q", dir)
+	}
+
+	for _, pkg := range pkgs {
+		if len(pkg.Errors) > 0 {
+			return nil, fmt.Errorf("failed to load package in %q: %v", dir, pkg.Errors[0])
+		}
+	}
+
+	return pkgs, nil
 }
 
 func parseStructTypeFromFile(
@@ -224,7 +238,7 @@ func parseJSONKey(tags reflect.StructTag, fieldName string) (string, error) {
 	return key, nil
 }
 
-func parseDescription(raw string, fieldName string, descriptionTagKey string) (string, error) {
+func parseDescription(raw, fieldName, descriptionTagKey string) (string, error) {
 	description := strings.TrimSpace(raw)
 	if description == "" {
 		return "", fmt.Errorf(
@@ -236,7 +250,7 @@ func parseDescription(raw string, fieldName string, descriptionTagKey string) (s
 	return description, nil
 }
 
-func parseDprintTag(raw string, kind string, fieldName string) (dprintTag, error) {
+func parseDprintTag(raw, kind, fieldName string) (dprintTag, error) {
 	if strings.TrimSpace(raw) == "" {
 		return dprintTag{}, fmt.Errorf("field %q must define a dprint tag", fieldName)
 	}
@@ -244,7 +258,7 @@ func parseDprintTag(raw string, kind string, fieldName string) (dprintTag, error
 	parsed := dprintTag{}
 	hasDefault := false
 
-	for _, token := range strings.Split(raw, ",") {
+	for token := range strings.SplitSeq(raw, ",") {
 		part := strings.TrimSpace(token)
 		if part == "" {
 			continue
@@ -279,7 +293,7 @@ func parseDprintTag(raw string, kind string, fieldName string) (dprintTag, error
 	return parsed, nil
 }
 
-func parseDefaultValue(value string, kind string, fieldName string) (any, error) {
+func parseDefaultValue(value, kind, fieldName string) (any, error) {
 	switch kind {
 	case kindUint32:
 		parsed, err := strconv.ParseUint(value, 10, 32)
@@ -353,7 +367,7 @@ func toSchemaProperty(field configField) (*jsonschema.Schema, error) {
 			Description: field.Description,
 			Default:     defaultValue,
 			Type:        "integer",
-			Minimum:     jsonschema.Ptr(0.0),
+			Minimum:     new(0.0),
 		}, nil
 	case kindBool:
 		return &jsonschema.Schema{
