@@ -22,18 +22,23 @@ const (
 var embeddedLicenseText string
 
 func (h *handler) PluginInfo() dprint.PluginInfo {
-	resolvedVersion := versionOrDefault()
-	resolvedReleaseTag := releaseTagOrDefault()
 	updateURL := pluginUpdateURL
 
 	return dprint.PluginInfo{
 		Name:            pluginName,
-		Version:         resolvedVersion,
+		Version:         orDefault(Version, defaultVersion),
 		ConfigKey:       pluginConfigKey,
 		HelpURL:         pluginHelpURL,
-		ConfigSchemaURL: configSchemaURLForTag(resolvedReleaseTag),
+		ConfigSchemaURL: configSchemaURLForTag(orDefault(ReleaseTag, defaultReleaseTag)),
 		UpdateURL:       &updateURL,
 	}
+}
+
+func orDefault(value, fallback string) string {
+	if value == "" {
+		return fallback
+	}
+	return value
 }
 
 func (h *handler) LicenseText() string {
@@ -46,18 +51,4 @@ func (h *handler) CheckConfigUpdates(_ dprint.CheckConfigUpdatesMessage) ([]dpri
 
 func configSchemaURLForTag(tag string) string {
 	return fmt.Sprintf("https://plugins.dprint.dev/hrko/shfmt/%s/schema.json", tag)
-}
-
-func versionOrDefault() string {
-	if Version == "" {
-		return defaultVersion
-	}
-	return Version
-}
-
-func releaseTagOrDefault() string {
-	if ReleaseTag == "" {
-		return defaultReleaseTag
-	}
-	return ReleaseTag
 }
