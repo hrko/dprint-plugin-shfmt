@@ -3,8 +3,9 @@ package main
 import (
 	"bytes"
 
-	"github.com/hrko/dprint-plugin-shfmt/dprint"
 	"mvdan.cc/sh/v3/syntax"
+
+	"github.com/hrko/dprint-plugin-shfmt/dprint"
 )
 
 func (h *handler) Format(

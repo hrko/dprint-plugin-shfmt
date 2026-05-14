@@ -50,8 +50,8 @@ func TestDprintPluginIntegration(t *testing.T) {
 	cases := []integrationCase{
 		{name: "format-success"},
 		{name: "no-change"},
-		{name: "parse-error", exitCode: 1, stderrContains: []string{"must end with \"fi\""}},
-		{name: "variant-sh-fails-for-bash-array", virtualPath: "sample.sh", exitCode: 1, stderrContains: []string{"arrays are a bash/mksh feature"}},
+		{name: "parse-error", exitCode: 1, stderrContains: []string{"`then` must be followed by a statement list"}},
+		{name: "variant-sh-fails-for-bash-array", virtualPath: "sample.sh", exitCode: 1, stderrContains: []string{"arrays are a bash/mksh/zsh feature"}},
 		{name: "variant-bash-succeeds-for-bash-array", virtualPath: "sample.bash"},
 		{name: "shebang-precedence"},
 		{name: "plugin-overrides-global"},
@@ -65,6 +65,7 @@ func TestDprintPluginIntegration(t *testing.T) {
 		{name: "config-type-error-diagnostic", exitCode: 1, stderrContains: []string{"Expected 'funcNextLine' to be a boolean", "Had 1 configuration errors."}},
 		{name: "unknown-property-diagnostic", exitCode: 1, stderrContains: []string{"Unknown property 'unknownField'.", "Had 1 configuration errors."}},
 		{name: "repeated-invocations-same-cache", repeat: 3},
+		{name: "deep-nesting-stress", virtualPath: "sample.bash"},
 	}
 
 	for _, tc := range cases {
@@ -112,7 +113,7 @@ func withCaseDefaults(tc integrationCase) integrationCase {
 	return tc
 }
 
-func loadFixture(t *testing.T, repoRoot string, fixtureName string) caseFixture {
+func loadFixture(t *testing.T, repoRoot, fixtureName string) caseFixture {
 	t.Helper()
 
 	fixtureDir := filepath.Join(repoRoot, "integration", "testdata", "cases", fixtureName)
@@ -191,9 +192,11 @@ func (r *integrationRunner) buildWasm(t *testing.T) {
 		"build",
 		"-o", r.wasmPath,
 		"-target=wasm-unknown",
+		"-gc=conservative",
 		"-scheduler=none",
 		"-panic=trap",
 		"-no-debug",
+		"-ldflags=-extldflags '-z stack-size=1048576'",
 		r.repoRoot,
 	)
 	cmd.Dir = r.repoRoot
@@ -217,7 +220,7 @@ func (r *integrationRunner) runCase(t *testing.T, tc integrationCase) {
 	}
 }
 
-func (r *integrationRunner) runFmt(t *testing.T, configPath string, virtualPath string, input string) fmtRunResult {
+func (r *integrationRunner) runFmt(t *testing.T, configPath, virtualPath, input string) fmtRunResult {
 	t.Helper()
 
 	cmd := exec.Command(

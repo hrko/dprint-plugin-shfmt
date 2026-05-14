@@ -1,5 +1,7 @@
 package dprint
 
+import "maps"
+
 type unresolvedConfigEntry struct {
 	id     FormatConfigID
 	config RawFormatConfig
@@ -11,9 +13,7 @@ func cloneConfigMap(config ConfigKeyMap) ConfigKeyMap {
 	}
 
 	newConfig := make(ConfigKeyMap, len(config))
-	for key, value := range config {
-		newConfig[key] = value
-	}
+	maps.Copy(newConfig, config)
 	return newConfig
 }
 

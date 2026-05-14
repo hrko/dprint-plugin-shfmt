@@ -7,3 +7,5 @@
 /.tmp/
 # Ignore GoReleaser output
 /dist/
+# Ignore debugging scripts and logs
+/debug/

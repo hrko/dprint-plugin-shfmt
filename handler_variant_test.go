@@ -15,10 +15,10 @@ func TestVariantFromFilePath(t *testing.T) {
 		wantVariant syntax.LangVariant
 		wantOK      bool
 	}{
-		{name: "sh extension", path: "script.sh", wantVariant: syntax.LangPOSIX, wantOK: true},
+		{name: "sh extension", path: testFileScriptSh, wantVariant: syntax.LangPOSIX, wantOK: true},
 		{name: "bash extension", path: "script.bash", wantVariant: syntax.LangBash, wantOK: true},
-		{name: "zsh extension uppercase", path: "script.ZSH", wantVariant: syntax.LangBash, wantOK: true},
-		{name: "bats extension", path: "test.bats", wantVariant: syntax.LangBash, wantOK: true},
+		{name: "zsh extension uppercase", path: "script.ZSH", wantVariant: syntax.LangZsh, wantOK: true},
+		{name: "bats extension", path: "test.bats", wantVariant: syntax.LangBats, wantOK: true},
 		{name: "mksh extension", path: "script.mksh", wantVariant: syntax.LangMirBSDKorn, wantOK: true},
 		{name: "mksh extension uppercase", path: "script.MKSH", wantVariant: syntax.LangMirBSDKorn, wantOK: true},
 		{name: "ksh extension unsupported", path: "script.ksh", wantVariant: syntax.LangBash, wantOK: false},
@@ -57,8 +57,8 @@ func TestVariantFromShebang(t *testing.T) {
 		{name: "dash shebang", fileBytes: []byte("#!/usr/bin/dash\n"), wantVariant: syntax.LangPOSIX, wantOK: true},
 		{name: "ash shebang", fileBytes: []byte("#!/bin/ash\n"), wantVariant: syntax.LangPOSIX, wantOK: true},
 		{name: "bash shebang", fileBytes: []byte("#!/bin/bash -e\n"), wantVariant: syntax.LangBash, wantOK: true},
-		{name: "zsh shebang", fileBytes: []byte("#!/bin/zsh\n"), wantVariant: syntax.LangBash, wantOK: true},
-		{name: "bats shebang", fileBytes: []byte("#!/usr/bin/bats\n"), wantVariant: syntax.LangBash, wantOK: true},
+		{name: "zsh shebang", fileBytes: []byte("#!/bin/zsh\n"), wantVariant: syntax.LangZsh, wantOK: true},
+		{name: "bats shebang", fileBytes: []byte("#!/usr/bin/bats\n"), wantVariant: syntax.LangBats, wantOK: true},
 		{name: "mksh shebang", fileBytes: []byte("#!/bin/mksh\n"), wantVariant: syntax.LangMirBSDKorn, wantOK: true},
 		{name: "mksh uppercase shebang", fileBytes: []byte("#!/BIN/MKSH\n"), wantVariant: syntax.LangMirBSDKorn, wantOK: true},
 		{name: "env mksh shebang", fileBytes: []byte("#!/usr/bin/env mksh\n"), wantVariant: syntax.LangMirBSDKorn, wantOK: true},
@@ -98,7 +98,7 @@ func TestDetectVariant(t *testing.T) {
 	}{
 		{
 			name:        "shebang takes precedence over extension",
-			filePath:    "script.sh",
+			filePath:    testFileScriptSh,
 			fileBytes:   []byte("#!/bin/mksh\nset -e\n"),
 			wantVariant: syntax.LangMirBSDKorn,
 		},
@@ -110,7 +110,7 @@ func TestDetectVariant(t *testing.T) {
 		},
 		{
 			name:        "file path fallback when shebang unsupported",
-			filePath:    "script.sh",
+			filePath:    testFileScriptSh,
 			fileBytes:   []byte("#!/bin/ksh\necho ok\n"),
 			wantVariant: syntax.LangPOSIX,
 		},

@@ -85,6 +85,17 @@ var generatedConfigurationResolverSpec = dprint.ConfigResolverSpec[configuration
 				config.Minify = value
 			},
 		},
+		{
+			Key:                 "experimentalZsh",
+			DefaultValue:        false,
+			AllowGlobalOverride: false,
+			Get: func(config configuration) bool {
+				return config.ExperimentalZsh
+			},
+			Set: func(config *configuration, value bool) {
+				config.ExperimentalZsh = value
+			},
+		},
 	},
 	KnownKeys: []string{
 		"indentWidth",
@@ -94,6 +105,7 @@ var generatedConfigurationResolverSpec = dprint.ConfigResolverSpec[configuration
 		"spaceRedirects",
 		"funcNextLine",
 		"minify",
+		"experimentalZsh",
 		"locked",
 	},
 }

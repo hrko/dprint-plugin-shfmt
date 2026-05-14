@@ -1,20 +1,16 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+---
 version: "2"
 
 formatters:
-  enable:
-    - gci
-    - gofumpt
+  enable: [gci, gofumpt, gofmt, goimports]
   settings:
-    gci:
-      sections:
-        - standard
-        - default
+    gci: { sections: [standard, default, localmodule] }
+    gofumpt:
+      module-path: github.com/hrko/dprint-plugin-shfmt
+      extra-rules: true
+    goimports: { local-prefixes: [github.com/hrko/dprint-plugin-shfmt] }
 
 linters:
   default: standard
-  enable:
-    - revive
-    - gocritic
-    - goconst
-    - nakedret
-    - tagalign
+  enable: [revive, gocritic, goconst, nakedret, tagalign]

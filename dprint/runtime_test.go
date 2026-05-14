@@ -198,7 +198,7 @@ func TestFormatFlowAndPathNormalization(t *testing.T) {
 	}
 
 	handler.nextFormatResult = FormatError(errors.New("format failed"))
-	runtime.sharedBytes = []byte("script.sh")
+	runtime.sharedBytes = []byte(testFileScriptSh)
 	runtime.SetFilePath()
 	runtime.sharedBytes = []byte("echo test")
 	result = runtime.Format(1)
@@ -211,7 +211,7 @@ func TestFormatFlowAndPathNormalization(t *testing.T) {
 	}
 
 	handler.nextFormatResult = NoChange()
-	runtime.sharedBytes = []byte("script.sh")
+	runtime.sharedBytes = []byte(testFileScriptSh)
 	runtime.SetFilePath()
 	runtime.sharedBytes = []byte("echo test")
 	result = runtime.Format(1)
@@ -224,7 +224,7 @@ func TestCheckConfigUpdatesResponse(t *testing.T) {
 	handler := &testHandler{
 		checkConfigUpdatesChanges: []ConfigChange{
 			{
-				Path:  []any{"indentWidth"},
+				Path:  []any{cfgKeyIndentWidth},
 				Kind:  ConfigChangeKindSet,
 				Value: 2,
 			},
@@ -257,7 +257,7 @@ func TestCheckConfigUpdatesResponse(t *testing.T) {
 	if err := json.Unmarshal(runtime.sharedBytes, &errResponse); err != nil {
 		t.Fatal(err)
 	}
-	if errResponse.Kind != "err" {
+	if errResponse.Kind != diagKindErr {
 		t.Fatalf("expected err response, got %q", errResponse.Kind)
 	}
 	if errResponse.Data != "update failed" {
@@ -269,7 +269,7 @@ func TestCheckConfigUpdatesResponse(t *testing.T) {
 	if err := json.Unmarshal(runtime.sharedBytes, &errResponse); err != nil {
 		t.Fatal(err)
 	}
-	if errResponse.Kind != "err" {
+	if errResponse.Kind != diagKindErr {
 		t.Fatalf("expected err response for invalid json, got %q", errResponse.Kind)
 	}
 }
@@ -289,13 +289,13 @@ func TestParseRawFormatConfigDecodesPrimitiveValues(t *testing.T) {
 		t.Fatalf("expected parse to succeed: %v", err)
 	}
 
-	if getInt(config.Plugin["indentWidth"]) != 2 {
-		t.Fatalf("expected plugin indentWidth 2, got %#v", config.Plugin["indentWidth"])
+	if getInt(config.Plugin[cfgKeyIndentWidth]) != 2 {
+		t.Fatalf("expected plugin indentWidth 2, got %#v", config.Plugin[cfgKeyIndentWidth])
 	}
 
-	useTabs, ok := config.Plugin["useTabs"].(bool)
+	useTabs, ok := config.Plugin[cfgKeyUseTabs].(bool)
 	if !ok || useTabs {
-		t.Fatalf("expected plugin useTabs false, got %#v", config.Plugin["useTabs"])
+		t.Fatalf("expected plugin useTabs false, got %#v", config.Plugin[cfgKeyUseTabs])
 	}
 
 	if config.Plugin["name"] != "demo" {
@@ -315,14 +315,14 @@ func TestFormatWithHostNoChangeForwardsRequest(t *testing.T) {
 	runtime.host = host
 
 	result := runtime.formatWithHost(SyncHostFormatRequest{
-		FilePath:  "script.sh",
+		FilePath:  testFileScriptSh,
 		FileBytes: []byte("echo test\n"),
 		Range: &FormatRange{
 			Start: 2,
 			End:   5,
 		},
 		OverrideConfig: ConfigKeyMap{
-			"useTabs": true,
+			cfgKeyUseTabs: true,
 		},
 	})
 
@@ -332,7 +332,7 @@ func TestFormatWithHostNoChangeForwardsRequest(t *testing.T) {
 	if !host.formatCalled {
 		t.Fatal("expected host format to be called")
 	}
-	if host.gotRequest.filePath != "script.sh" {
+	if host.gotRequest.filePath != testFileScriptSh {
 		t.Fatalf("expected forwarded file path, got %q", host.gotRequest.filePath)
 	}
 	if host.gotRequest.rangeStart != 2 || host.gotRequest.rangeEnd != 5 {
@@ -355,7 +355,7 @@ func TestFormatWithHostChangeReadsFormattedBytes(t *testing.T) {
 	runtime.host = host
 
 	result := runtime.formatWithHost(SyncHostFormatRequest{
-		FilePath:  "script.sh",
+		FilePath:  testFileScriptSh,
 		FileBytes: []byte("echo test\n"),
 	})
 
@@ -379,7 +379,7 @@ func TestFormatWithHostErrorReadsErrorBytes(t *testing.T) {
 	runtime.host = host
 
 	result := runtime.formatWithHost(SyncHostFormatRequest{
-		FilePath:  "script.sh",
+		FilePath:  testFileScriptSh,
 		FileBytes: []byte("echo test\n"),
 	})
 
@@ -401,7 +401,7 @@ func TestFormatPassesCancellationTokenFromHost(t *testing.T) {
 	runtime.sharedBytes = []byte(`{"plugin":{"value":2},"global":{}}`)
 	runtime.RegisterConfig(1)
 
-	runtime.sharedBytes = []byte("script.sh")
+	runtime.sharedBytes = []byte(testFileScriptSh)
 	runtime.SetFilePath()
 	runtime.sharedBytes = []byte("echo test")
 

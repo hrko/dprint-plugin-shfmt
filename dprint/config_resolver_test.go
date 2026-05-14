@@ -14,7 +14,7 @@ type resolveConfigSpecTestConfig struct {
 var resolveConfigSpecTestSpec = ConfigResolverSpec[resolveConfigSpecTestConfig]{
 	UInt32Fields: []UInt32ConfigFieldSpec[resolveConfigSpecTestConfig]{
 		{
-			Key:                 "indentWidth",
+			Key:                 cfgKeyIndentWidth,
 			DefaultValue:        2,
 			AllowGlobalOverride: true,
 			Get: func(config resolveConfigSpecTestConfig) uint32 {
@@ -27,7 +27,7 @@ var resolveConfigSpecTestSpec = ConfigResolverSpec[resolveConfigSpecTestConfig]{
 	},
 	BoolFields: []BoolConfigFieldSpec[resolveConfigSpecTestConfig]{
 		{
-			Key:                 "useTabs",
+			Key:                 cfgKeyUseTabs,
 			DefaultValue:        false,
 			AllowGlobalOverride: true,
 			Get: func(config resolveConfigSpecTestConfig) bool {
@@ -38,7 +38,7 @@ var resolveConfigSpecTestSpec = ConfigResolverSpec[resolveConfigSpecTestConfig]{
 			},
 		},
 		{
-			Key:                 "minify",
+			Key:                 cfgKeyMinify,
 			DefaultValue:        false,
 			AllowGlobalOverride: false,
 			Get: func(config resolveConfigSpecTestConfig) bool {
@@ -51,9 +51,9 @@ var resolveConfigSpecTestSpec = ConfigResolverSpec[resolveConfigSpecTestConfig]{
 	},
 	KnownKeys: []string{
 		"locked",
-		"indentWidth",
-		"useTabs",
-		"minify",
+		cfgKeyIndentWidth,
+		cfgKeyUseTabs,
+		cfgKeyMinify,
 	},
 }
 
@@ -81,14 +81,14 @@ func TestResolveConfigWithSpecDefaults(t *testing.T) {
 func TestResolveConfigWithSpecPrefersPluginConfigOverGlobal(t *testing.T) {
 	resolved, diagnostics := ResolveConfigWithSpec(
 		ConfigKeyMap{
-			"indentWidth": float64(4),
-			"useTabs":     []byte("false"),
-			"minify":      []byte("true"),
-			"unknown":     true,
+			cfgKeyIndentWidth: float64(4),
+			cfgKeyUseTabs:     []byte("false"),
+			cfgKeyMinify:      []byte("true"),
+			"unknown":         true,
 		},
 		GlobalConfiguration{
-			"indentWidth": json.Number("8"),
-			"useTabs":     []byte("1"),
+			cfgKeyIndentWidth: json.Number("8"),
+			cfgKeyUseTabs:     []byte("1"),
 		},
 		resolveConfigSpecTestSpec,
 	)
@@ -105,7 +105,7 @@ func TestResolveConfigWithSpecPrefersPluginConfigOverGlobal(t *testing.T) {
 	if len(diagnostics) != 1 {
 		t.Fatalf("expected 1 diagnostic, got %d", len(diagnostics))
 	}
-	if diagnostics[0]["propertyName"] != "unknown" {
+	if diagnostics[0][diagPropertyKey] != "unknown" {
 		t.Fatalf("expected unknown property diagnostic, got %#v", diagnostics[0])
 	}
 }
@@ -127,12 +127,12 @@ func TestResolveConfigWithSpecAllowsKnownExtraKey(t *testing.T) {
 func TestResolveConfigWithSpecIgnoresNilValues(t *testing.T) {
 	resolved, diagnostics := ResolveConfigWithSpec(
 		ConfigKeyMap{
-			"indentWidth": nil,
-			"useTabs":     nil,
+			cfgKeyIndentWidth: nil,
+			cfgKeyUseTabs:     nil,
 		},
 		GlobalConfiguration{
-			"indentWidth": nil,
-			"useTabs":     nil,
+			cfgKeyIndentWidth: nil,
+			cfgKeyUseTabs:     nil,
 		},
 		resolveConfigSpecTestSpec,
 	)

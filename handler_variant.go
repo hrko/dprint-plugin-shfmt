@@ -8,6 +8,14 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
+const (
+	extBash = "bash"
+	extBats = "bats"
+	extMksh = "mksh"
+	extSh   = "sh"
+	extZsh  = "zsh"
+)
+
 func detectVariant(filePath string, fileBytes []byte) syntax.LangVariant {
 	if variant, ok := variantFromShebang(fileBytes); ok {
 		return variant
@@ -21,11 +29,15 @@ func detectVariant(filePath string, fileBytes []byte) syntax.LangVariant {
 func variantFromFilePath(filePath string) (syntax.LangVariant, bool) {
 	extension := strings.TrimPrefix(strings.ToLower(filepath.Ext(filePath)), ".")
 	switch extension {
-	case "sh":
+	case extSh:
 		return syntax.LangPOSIX, true
-	case "bash", "zsh", "bats":
+	case extBash:
 		return syntax.LangBash, true
-	case "mksh":
+	case extBats:
+		return syntax.LangBats, true
+	case extZsh:
+		return syntax.LangZsh, true
+	case extMksh:
 		return syntax.LangMirBSDKorn, true
 	default:
 		return syntax.LangBash, false
@@ -60,11 +72,15 @@ func variantFromShebang(fileBytes []byte) (syntax.LangVariant, bool) {
 	}
 
 	switch interpreter {
-	case "sh", "dash", "ash":
+	case extSh, "dash", "ash":
 		return syntax.LangPOSIX, true
-	case "bash", "zsh", "bats":
+	case extBash:
 		return syntax.LangBash, true
-	case "mksh":
+	case extBats:
+		return syntax.LangBats, true
+	case extZsh:
+		return syntax.LangZsh, true
+	case extMksh:
 		return syntax.LangMirBSDKorn, true
 	default:
 		return syntax.LangBash, false

@@ -1,10 +1,10 @@
 [tools]
-"aqua:tinygo-org/tinygo" = "0.40.1"
-dprint = "0.53.1"
-go = "1.25.7"
+"aqua:tinygo-org/tinygo" = "0.41.1"
+dprint = "0.54.0"
+go = "1.26.3"
 "go:github.com/google/go-licenses/v2" = "2.0.1"
-golangci-lint = "2.11.4"
-goreleaser = "2.13.3"
+golangci-lint = "2.12.2"
+goreleaser = "2.15.4"
 
 [tasks.generate]
 description = "Run go generate for code generation"
@@ -32,7 +32,7 @@ run = "golangci-lint run ./..."
 
 [tasks.build-wasm]
 description = "Build wasm plugin"
-run = "tinygo build -o plugin.wasm -target=wasm-unknown -scheduler=none -panic=trap -no-debug -ldflags=\"-X main.Version=${DPRINT_PLUGIN_SHFMT_VERSION:-0.0.0-dev} -X main.ReleaseTag=${DPRINT_PLUGIN_SHFMT_RELEASE_TAG:-v0.0.0-dev}\" ."
+run = "tinygo build -o plugin.wasm -target=wasm-unknown -gc=conservative -scheduler=none -panic=trap -no-debug -ldflags=\"-extldflags '-z stack-size=1048576' -X main.Version=${DPRINT_PLUGIN_SHFMT_VERSION:-0.0.0-dev} -X main.ReleaseTag=${DPRINT_PLUGIN_SHFMT_RELEASE_TAG:-v0.0.0-dev}\" ."
 
 [tasks.release-check]
 description = "Validate goreleaser configuration"

@@ -5,6 +5,11 @@ import (
 	"sort"
 )
 
+const (
+	diagPropertyKey = "propertyName"
+	diagMessageKey  = "message"
+)
+
 // UInt32ConfigFieldSpec describes how to resolve one uint32 configuration field.
 type UInt32ConfigFieldSpec[T any] struct {
 	Key                 string
@@ -145,8 +150,8 @@ func unknownPropertyDiagnosticsWithKnownKeys(config map[string]any, knownKeys []
 	diagnostics := make([]ConfigurationDiagnostic, 0, len(unknownKeys))
 	for _, key := range unknownKeys {
 		diagnostics = append(diagnostics, ConfigurationDiagnostic{
-			"propertyName": key,
-			"message":      fmt.Sprintf("Unknown property '%s'.", key),
+			diagPropertyKey: key,
+			diagMessageKey:  fmt.Sprintf("Unknown property '%s'.", key),
 		})
 	}
 
@@ -170,8 +175,8 @@ func getUInt32(
 	uintValue, ok := CoerceUInt32(value)
 	if !ok {
 		*diagnostics = append(*diagnostics, ConfigurationDiagnostic{
-			"propertyName": key,
-			"message":      fmt.Sprintf("Expected '%s' to be a non-negative integer, but got %T.", key, value),
+			diagPropertyKey: key,
+			diagMessageKey:  fmt.Sprintf("Expected '%s' to be a non-negative integer, but got %T.", key, value),
 		})
 		return fallback
 	}
@@ -196,8 +201,8 @@ func getBool(
 	boolValue, ok := CoerceBool(value)
 	if !ok {
 		*diagnostics = append(*diagnostics, ConfigurationDiagnostic{
-			"propertyName": key,
-			"message":      fmt.Sprintf("Expected '%s' to be a boolean, but got %T.", key, value),
+			diagPropertyKey: key,
+			diagMessageKey:  fmt.Sprintf("Expected '%s' to be a boolean, but got %T.", key, value),
 		})
 		return fallback
 	}
