@@ -34,7 +34,7 @@ func TestResolveConfigExperimentalZshAdvertisesExtension(t *testing.T) {
 	h := &handler{}
 
 	result := h.ResolveConfig(
-		dprint.ConfigKeyMap{"experimentalZsh": true},
+		dprint.ConfigKeyMap{cfgKeyExperimentalZsh: true},
 		dprint.GlobalConfiguration{},
 	)
 
@@ -67,14 +67,14 @@ func TestResolveConfigPluginConfigPrecedenceAndDiagnostics(t *testing.T) {
 
 	result := h.ResolveConfig(
 		dprint.ConfigKeyMap{
-			"indentWidth":  float64(4),
-			"useTabs":      false,
-			"funcNextLine": "invalid",
-			"unknownField": true,
+			cfgKeyIndentWidth:  float64(4),
+			cfgKeyUseTabs:      false,
+			cfgKeyFuncNextLine: "invalid",
+			"unknownField":     true,
 		},
 		dprint.GlobalConfiguration{
-			"indentWidth": float64(8),
-			"useTabs":     true,
+			cfgKeyIndentWidth: float64(8),
+			cfgKeyUseTabs:     true,
 		},
 	)
 
@@ -95,15 +95,15 @@ func TestResolveConfigCoercesFlexibleValueTypes(t *testing.T) {
 
 	result := h.ResolveConfig(
 		dprint.ConfigKeyMap{
-			"indentWidth":      []byte("4"),
-			"useTabs":          "false",
-			"binaryNextLine":   []byte("true"),
-			"switchCaseIndent": json.Number("1"),
-			"spaceRedirects":   float64(0),
+			cfgKeyIndentWidth:      []byte("4"),
+			cfgKeyUseTabs:          "false",
+			cfgKeyBinaryNextLine:   []byte("true"),
+			cfgKeySwitchCaseIndent: json.Number("1"),
+			cfgKeySpaceRedirects:   float64(0),
 		},
 		dprint.GlobalConfiguration{
-			"indentWidth": json.Number("8"),
-			"useTabs":     []byte("1"),
+			cfgKeyIndentWidth: json.Number("8"),
+			cfgKeyUseTabs:     []byte("1"),
 		},
 	)
 
@@ -132,12 +132,12 @@ func TestResolveConfigIgnoresNilValues(t *testing.T) {
 
 	result := h.ResolveConfig(
 		dprint.ConfigKeyMap{
-			"indentWidth": nil,
-			"useTabs":     nil,
+			cfgKeyIndentWidth: nil,
+			cfgKeyUseTabs:     nil,
 		},
 		dprint.GlobalConfiguration{
-			"indentWidth": nil,
-			"useTabs":     nil,
+			cfgKeyIndentWidth: nil,
+			cfgKeyUseTabs:     nil,
 		},
 	)
 
@@ -184,7 +184,7 @@ func TestFormatDetectsBashShebang(t *testing.T) {
 
 	result := h.Format(
 		dprint.SyncFormatRequest[configuration]{
-			FilePath: "script.sh",
+			FilePath: testFileScriptSh,
 			FileBytes: []byte(
 				"#!/usr/bin/env bash\nif [[ \"$a\" == \"b\" ]];then\necho ok\nfi\n",
 			),

@@ -3,9 +3,12 @@ package dprint
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"strings"
 	"unicode/utf8"
 )
+
+const diagKindErr = "err"
 
 type jsonResponse struct {
 	Kind string `json:"kind"`
@@ -141,7 +144,7 @@ func (r *Runtime[T]) Format(configID uint32) uint32 {
 }
 
 // FormatRange formats only the specified byte range for the config id.
-func (r *Runtime[T]) FormatRange(configID uint32, rangeStart uint32, rangeEnd uint32) uint32 {
+func (r *Runtime[T]) FormatRange(configID, rangeStart, rangeEnd uint32) uint32 {
 	return r.formatInner(FormatConfigIDFromRaw(configID), &FormatRange{
 		Start: rangeStart,
 		End:   rangeEnd,
@@ -181,14 +184,14 @@ func (r *Runtime[T]) CheckConfigUpdates() uint32 {
 	var message CheckConfigUpdatesMessage
 	if err := json.Unmarshal(r.takeSharedBytes(), &message); err != nil {
 		response = jsonResponse{
-			Kind: "err",
+			Kind: diagKindErr,
 			Data: err.Error(),
 		}
 	} else {
 		changes, err := r.handler.CheckConfigUpdates(message)
 		if err != nil {
 			response = jsonResponse{
-				Kind: "err",
+				Kind: diagKindErr,
 				Data: err.Error(),
 			}
 		} else {
@@ -282,9 +285,7 @@ func (r *Runtime[T]) createResolvedConfigResult(configID FormatConfigID, overrid
 	}
 
 	pluginConfig := cloneConfigMap(unresolvedConfig.Plugin)
-	for key, value := range overrideConfig {
-		pluginConfig[key] = value
-	}
+	maps.Copy(pluginConfig, overrideConfig)
 
 	result := r.handler.ResolveConfig(pluginConfig, unresolvedConfig.Global)
 	if result.Diagnostics == nil {

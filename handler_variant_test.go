@@ -15,7 +15,7 @@ func TestVariantFromFilePath(t *testing.T) {
 		wantVariant syntax.LangVariant
 		wantOK      bool
 	}{
-		{name: "sh extension", path: "script.sh", wantVariant: syntax.LangPOSIX, wantOK: true},
+		{name: "sh extension", path: testFileScriptSh, wantVariant: syntax.LangPOSIX, wantOK: true},
 		{name: "bash extension", path: "script.bash", wantVariant: syntax.LangBash, wantOK: true},
 		{name: "zsh extension uppercase", path: "script.ZSH", wantVariant: syntax.LangZsh, wantOK: true},
 		{name: "bats extension", path: "test.bats", wantVariant: syntax.LangBats, wantOK: true},
@@ -98,7 +98,7 @@ func TestDetectVariant(t *testing.T) {
 	}{
 		{
 			name:        "shebang takes precedence over extension",
-			filePath:    "script.sh",
+			filePath:    testFileScriptSh,
 			fileBytes:   []byte("#!/bin/mksh\nset -e\n"),
 			wantVariant: syntax.LangMirBSDKorn,
 		},
@@ -110,7 +110,7 @@ func TestDetectVariant(t *testing.T) {
 		},
 		{
 			name:        "file path fallback when shebang unsupported",
-			filePath:    "script.sh",
+			filePath:    testFileScriptSh,
 			fileBytes:   []byte("#!/bin/ksh\necho ok\n"),
 			wantVariant: syntax.LangPOSIX,
 		},
